@@ -1,26 +1,26 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { AppState } from "../../types";
-import { buildCSS, buildHTML, freshState } from "../../lib/gridModel";
+import type { FlexAppState } from "../../types";
+import { buildCSS, buildHTML, freshState } from "../../lib/flexModel";
 import Topbar from "../Topbar";
 import Toast from "../Toast";
 import BreakpointBar from "./BreakpointBar";
 import Controls from "./Controls";
 import Preview from "./Preview";
 import CodePanel from "../CodePanel";
-import "./GridTool.css";
+import "./FlexTool.css";
 
-export type Update = (fn: (draft: AppState) => void) => void;
+export type Update = (fn: (draft: FlexAppState) => void) => void;
 
 interface History {
-  past: AppState[];
-  present: AppState;
-  future: AppState[];
+  past: FlexAppState[];
+  present: FlexAppState;
+  future: FlexAppState[];
 }
 
 const HISTORY_LIMIT = 100;
 const COALESCE_MS = 450; // merge rapid consecutive edits into one undo step
 
-export default function GridTool() {
+export default function FlexTool() {
   const [hist, setHist] = useState<History>(() => ({ past: [], present: freshState(), future: [] }));
   const [toast, setToast] = useState({ message: "", show: false });
   const lastTs = useRef(0);
@@ -33,7 +33,7 @@ export default function GridTool() {
   }, []);
 
   /* commit a new present state, managing the undo stack */
-  const commit = useCallback((producer: (prev: AppState) => AppState, force = false) => {
+  const commit = useCallback((producer: (prev: FlexAppState) => FlexAppState, force = false) => {
     setHist((h) => {
       const now = Date.now();
       const shouldPush = force || now - lastTs.current > COALESCE_MS;
@@ -49,7 +49,7 @@ export default function GridTool() {
 
   const update: Update = useCallback((fn) => {
     commit((prev) => {
-      const d = structuredClone(prev) as AppState;
+      const d = structuredClone(prev) as FlexAppState;
       fn(d);
       return d;
     });
@@ -110,8 +110,8 @@ export default function GridTool() {
   return (
     <div className="main">
       <Topbar
-        title="Grid Generator"
-        desc="Responsive CSS Grid builder"
+        title="Flexbox Generator"
+        desc="Responsive flexbox builder"
         canUndo={hist.past.length > 0}
         canRedo={hist.future.length > 0}
         onUndo={undo}

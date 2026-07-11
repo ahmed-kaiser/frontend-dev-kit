@@ -1,6 +1,6 @@
 # DevKit — Project Vision & Progress
 
-_Last updated: July 2026 · Status: v0.3 (Grid Generator shipped, tool-switching shell live)_
+_Last updated: July 2026 · Status: v0.4 (Grid + Flexbox Generators shipped)_
 
 ## Vision
 
@@ -19,8 +19,8 @@ the way we actually work.
 | Tool | Purpose | Status |
 | --- | --- | --- |
 | **Grid Generator** | Build responsive CSS Grid layouts visually | ✅ Shipped |
-| Flexbox Generator | Build flexbox layouts | ⏳ Planned (next) |
-| Box Shadow | Compose and stack box shadows | ⏳ Planned |
+| **Flexbox Generator** | Build responsive flexbox layouts visually | ✅ Shipped |
+| Box Shadow | Compose and stack box shadows | ⏳ Planned (next) |
 | Glass Effect | Frosted-glass / backdrop-blur presets | ⏳ Planned |
 | Color Converter | Convert between HEX / RGB / HSL / OKLCH | ⏳ Planned |
 | Animation | Keyframe & transition generator | ⏳ Planned |
@@ -57,19 +57,27 @@ react-grid-devkit/
       Sidebar.tsx            renders tool nav from the registry; disabled state for unbuilt tools
       Topbar.tsx             title + undo/redo/reset/copy
       Toast.tsx              transient notices
+      CodePanel.tsx          generated CSS / HTML with copy — shared by every tool
       ComingSoon.tsx          placeholder view for registered-but-unbuilt tools
       grid/
         GridTool.tsx         owns app state + undo/redo history
         BreakpointBar.tsx    breakpoint layers + min/max-width mode
         Controls.tsx         columns/rows, gap, alignment, auto-placement, items
         Preview.tsx          device frame, size readout, grid line numbers
-        CodePanel.tsx        generated CSS / HTML with copy
+      flex/
+        FlexTool.tsx         owns app state + undo/redo history
+        BreakpointBar.tsx    breakpoint layers + min/max-width mode
+        Controls.tsx         direction/wrap, gap, alignment, per-item grow/shrink/basis/order
+        Preview.tsx          device frame, size readout, live flex layout
 ```
 
 The architecture pattern for every future tool: **pure logic in `lib/`, a state-owner
 component, and presentational children.** New tools slot into `components/<tool>/` and register
 as one entry in `tools.ts` — the sidebar and router pick it up automatically, no shell changes
-needed.
+needed. Genuinely tool-agnostic pieces (`Topbar`, `Toast`, `CodePanel`, `highlight.ts`) live
+outside any tool folder and are shared; per-tool state/config types and models are not shared
+even when structurally similar (see `GridConfig`/`FlexConfig` in `types.ts`), keeping each tool's
+cascade and codegen logic independent and easy to reason about in isolation.
 
 ## What's done — Grid Generator
 
@@ -126,6 +134,44 @@ The first tool is complete and covers simple-to-advanced grid authoring.
 - Breakpoint cascade and CSS/HTML generation unit-tested (mobile-first and desktop-first).
 - App mounts and runs with zero runtime errors; undo/redo and interactions verified.
 
+## What's done — Flexbox Generator
+
+Second tool, built to the same depth as Grid via the tool-switching shell — registered in
+`tools.ts`, no shell changes required.
+
+**Layout engine**
+
+- `flex-direction` (row / row-reverse / column / column-reverse) and `flex-wrap` (nowrap / wrap
+  / wrap-reverse).
+- Row and column gap with a unit selector (px / rem / em / %).
+- Full alignment set: `justify-content`, `align-items`, `align-content` (with a hint that
+  align-content only matters once items wrap).
+- Items: add/remove, per-item `flex-grow` / `flex-shrink` / `flex-basis` (with quick-insert
+  chips), `order`, and `align-self`; click any item in the preview to select and edit it.
+  Grow/shrink/basis emit a single shorthand `flex` declaration only when non-default.
+
+**Responsive mode**
+
+- Same breakpoint-layer model as Grid — Base layer plus any number of breakpoints, sparse
+  overrides, mobile-first/desktop-first toggle, override indicators.
+
+**Device preview**
+
+- Same device presets and width scrubber as Grid; the previewed items visually reflow
+  (grow/shrink/wrap) live as the container width changes.
+
+**Productivity**
+
+- Live generated **CSS + HTML** and **undo/redo** — reuses the same `CodePanel`, `Topbar`, and
+  history-coalescing pattern as Grid verbatim.
+
+### Quality / verification
+
+- `tsc` strict type-check passes; Vite production build succeeds.
+- Driven end-to-end in a real browser: direction/wrap toggles, gap sliders, item grow/shrink/
+  basis editing, breakpoint override with correct generated `@media` block, and undo — plus a
+  regression check that Grid still works after promoting `CodePanel` to a shared component.
+
 ## Deliverables produced so far
 
 - `react-grid-devkit/` — the full Vite + React + TypeScript source project.
@@ -134,8 +180,8 @@ The first tool is complete and covers simple-to-advanced grid authoring.
 
 ## Roadmap / next steps
 
-- **Flexbox Generator** — the next tool, following the Grid pattern (`lib/flexModel.ts` +
-  `components/flex/`, then one entry in `tools.ts`).
+- **Box Shadow** — the next tool, following the same `lib/` + `components/<tool>/` +
+  `tools.ts`-registration pattern.
 - **Grid extras** (optional polish): `grid-template-areas` visual editor; hover-to-pick N×M
   size picker.
 - **DX**: an `npm run build:standalone` script to regenerate the single-file app on demand.

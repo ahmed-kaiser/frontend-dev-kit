@@ -69,3 +69,58 @@ export interface DevicePreset {
   ico: string;
   w: number | null;
 }
+
+/* ---------- Flexbox tool ---------- */
+
+export interface FlexItem {
+  id: number;
+  order: number;
+  grow: number;
+  shrink: number;
+  basis: string;
+  alignSelf: string;
+}
+
+export interface FlexConfig {
+  direction: string;
+  wrap: string;
+  justifyContent: string;
+  alignItems: string;
+  alignContent: string;
+  rowGap: number;
+  colGap: number;
+  gapUnit: string;
+  items: FlexItem[];
+}
+
+export type FlexItemOverride = Partial<Omit<FlexItem, "id">>;
+
+export interface FlexOverride {
+  direction?: string;
+  wrap?: string;
+  justifyContent?: string;
+  alignItems?: string;
+  alignContent?: string;
+  rowGap?: number;
+  colGap?: number;
+  gapUnit?: string;
+  items?: Record<number, FlexItemOverride>;
+}
+
+export interface FlexBreakpoint {
+  id: number;
+  name: string;
+  w: number;
+  cfg?: FlexConfig;   // present on the Base breakpoint (full config)
+  ov?: FlexOverride;  // present on non-base breakpoints (sparse overrides)
+}
+
+export interface FlexAppState {
+  mode: Mode;
+  breakpoints: FlexBreakpoint[];
+  activeBp: number;
+  selected: number;
+  previewW: number | null;
+  device: string;
+  showLabels: boolean;
+}

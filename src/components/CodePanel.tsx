@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { hlCSS, hlHTML } from "../../lib/highlight";
+import { hlCSS, hlHTML } from "../lib/highlight";
 import "./CodePanel.css";
 
 interface Props {
