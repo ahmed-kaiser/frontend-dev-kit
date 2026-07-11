@@ -1,0 +1,33 @@
+.group { border-bottom: 1px solid var(--border); }
+.group-head { padding: 12px 18px; display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+.group-head .caret { color: var(--text-faint); font-size: 10px; transition: transform .15s; }
+.group.collapsed .caret { transform: rotate(-90deg); }
+.group-head h3 { font-size: 12.5px; font-weight: 650; letter-spacing: 0.01em; }
+.group-body { padding: 4px 18px 18px; display: flex; flex-direction: column; gap: 14px; }
+.group.collapsed .group-body { display: none; }
+
+.track-row { display: flex; align-items: center; gap: 6px; }
+.quick-units { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+.quick-units button { font-size: 10px; padding: 3px 7px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text-faint); border-radius: 4px; cursor: pointer; font-family: var(--mono); }
+.quick-units button:hover { color: var(--accent); border-color: var(--accent); }
+
+.item-tabs { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 4px; }
+.item-tab { padding: 5px 10px; border: 1px solid var(--border-2); background: var(--bg); color: var(--text-dim); border-radius: var(--radius-sm); cursor: pointer; font-size: 11px; font-weight: 600; font-family: var(--mono); display: inline-flex; align-items: center; gap: 6px; }
+.item-tab:hover { color: var(--text); }
+.item-tab.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.item-tab .swatch { width: 10px; height: 10px; border-radius: 3px; border: 1px solid var(--border-2); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25); }
+
+.color-row { display: flex; gap: 8px; align-items: center; }
+.color-row input[type="color"] {
+  width: 40px; height: 34px; flex-shrink: 0; padding: 2px; background: var(--bg);
+  border: 1px solid var(--border-2); border-radius: var(--radius-sm); cursor: pointer;
+}
+.color-row input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+.color-row input[type="color"]::-webkit-color-swatch { border: none; border-radius: 3px; }
+.color-row input[type="text"] { flex: 1; text-transform: uppercase; }
+
+/* horizontal gradient preview bar in the stops editor */
+.grad-bar {
+  height: 26px; border-radius: var(--radius-sm); border: 1px solid var(--border-2);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}

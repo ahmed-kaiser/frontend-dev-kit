@@ -1,6 +1,6 @@
 # DevKit — Project Vision & Progress
 
-_Last updated: July 2026 · Status: v0.5 (Grid + Flexbox + Box Shadow Generators shipped)_
+_Last updated: July 2026 · Status: v0.6 (Grid + Flexbox + Box Shadow + Gradient Generators shipped)_
 
 ## Vision
 
@@ -21,6 +21,7 @@ the way we actually work.
 | **Grid Generator** | Build responsive CSS Grid layouts visually | ✅ Shipped |
 | **Flexbox Generator** | Build responsive flexbox layouts visually | ✅ Shipped |
 | **Box Shadow** | Compose and stack box shadows | ✅ Shipped |
+| **Gradient** | Linear / radial / conic gradient generator | ✅ Shipped |
 | Glass Effect | Frosted-glass / backdrop-blur presets | ⏳ Planned (next) |
 | Color Converter | Convert between HEX / RGB / HSL / OKLCH | ⏳ Planned |
 | Animation | Keyframe & transition generator | ⏳ Planned |
@@ -54,6 +55,7 @@ react-grid-devkit/
       gridModel.ts           pure logic: state, breakpoint cascade, CSS/HTML generation
       flexModel.ts           pure logic: flex state, breakpoint cascade, CSS/HTML generation
       shadowModel.ts         pure logic: shadow-layer state, color/rgba helpers, CSS/HTML generation
+      gradientModel.ts       pure logic: gradient state, stop sorting, color/rgba helpers, CSS/HTML generation
       highlight.ts           tiny CSS/HTML syntax highlighters
     components/
       Sidebar.tsx            renders tool nav from the registry; disabled state for unbuilt tools
@@ -75,6 +77,10 @@ react-grid-devkit/
         ShadowTool.tsx       owns app state + undo/redo history
         Controls.tsx         layer stack (add/dup/remove/hide), per-layer inset/offset/blur/spread/color+opacity, element bg/border/radius/size, backdrop
         Preview.tsx          dark/light/checker/custom backdrop, live shadowed element
+      gradient/
+        GradientTool.tsx     owns app state + undo/redo history
+        Controls.tsx         type (linear/radial/conic), angle/shape/position, color stops (add/remove) with color+opacity+position, live gradient bar
+        Preview.tsx          type/geometry readout, full-bleed live gradient element
 ```
 
 The architecture pattern for every future tool: **pure logic in `lib/`, a state-owner
@@ -218,7 +224,37 @@ breakpoint-layer model, making it the simplest tool to reason about.
 
 ### Quality / verification
 
-- `tsc` strict type-check passes; Vite production build succeeds (68 modules).
+- `tsc` strict type-check passes; Vite production build succeeds.
+
+## What's done — Gradient Generator
+
+Fourth tool, registered under **Effects** in `tools.ts` with no shell changes. Like Box Shadow it
+keeps a single flat state (gradients are rarely breakpoint-specific).
+
+**Gradient engine**
+
+- Three gradient **types** — `linear`, `radial`, and `conic` — each emitting the correct CSS
+  function. Geometry adapts to the type: angle (+ quick-angle chips) for linear/conic, a
+  `circle`/`ellipse` shape for radial, and a center X/Y position for radial/conic.
+- **Colour stops** — add / remove (min two), each with a colour picker (native swatch + editable
+  hex), an opacity slider that emits `rgba()`, and a position slider. Stops are sorted by position
+  for the generated value, so ordering is always predictable regardless of edit order.
+- A live **gradient bar** in the stops editor previews the stop distribution as a horizontal ramp.
+
+**Preview**
+
+- Full-bleed live gradient element over the app's dotted stage, with a type + geometry readout and
+  a stop-count badge.
+
+**Productivity**
+
+- Live generated **CSS + HTML** and **undo/redo** — reuses `CodePanel`, `Topbar`, and the same
+  history-coalescing pattern as the other tools.
+
+### Quality / verification
+
+- `tsc` strict type-check passes; Vite production build succeeds (75 modules); `#/gradient` route
+  serves and the tool mounts.
 
 ## Deliverables produced so far
 

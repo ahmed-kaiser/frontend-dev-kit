@@ -154,3 +154,22 @@ export interface ShadowAppState {
   stageColor: string; // backdrop color when stage === "custom" (hex)
   stageAlpha: number; // backdrop opacity when stage === "custom" (0–100)
 }
+
+/* ---------- Gradient tool ---------- */
+
+export interface GradientStop {
+  id: number;
+  color: string;   // hex "#rrggbb"
+  alpha: number;   // 0–100
+  pos: number;     // 0–100 (%)
+}
+
+export interface GradientState {
+  type: string;        // "linear" | "radial" | "conic"
+  angle: number;       // linear angle / conic "from" angle (deg)
+  radialShape: string; // "circle" | "ellipse" (radial only)
+  posX: number;        // center X % (radial/conic)
+  posY: number;        // center Y % (radial/conic)
+  stops: GradientStop[];
+  selected: number;
+}

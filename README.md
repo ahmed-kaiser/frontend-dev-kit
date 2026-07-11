@@ -14,6 +14,7 @@ no CSS framework. TypeScript strict mode throughout.
 | **Grid Generator** | Build responsive CSS Grid layouts visually | ✅ Shipped |
 | **Flexbox Generator** | Build responsive flexbox layouts visually | ✅ Shipped |
 | **Box Shadow** | Compose and stack box shadows | ✅ Shipped |
+| **Gradient** | Linear / radial / conic gradient generator | ✅ Shipped |
 | Glass Effect | Frosted-glass / backdrop-blur presets | ⏳ Next |
 | Color Converter, Animation, … | Additional utilities as needs arise | 💡 Planned |
 
@@ -22,7 +23,9 @@ and per-item controls, a device-preset preview with a width scrubber, and live C
 **Box Shadow** stacks any number of shadow layers (add / duplicate / remove / hide), each with
 inset, offset, blur, spread, and colour + opacity; the preview element has configurable
 background, optional border, radius, and size, viewed against a dark / light / checker / custom
-backdrop. All tools share undo/redo and one-click copy.
+backdrop. **Gradient** builds linear, radial, and conic gradients with type-aware geometry (angle,
+shape, center position) and any number of colour stops (colour + opacity + position), with a live
+gradient bar in the editor. All tools share undo/redo and one-click copy.
 
 ## Run
 
@@ -51,6 +54,7 @@ src/
     gridModel.ts           pure logic: grid state, breakpoint cascade, CSS/HTML generation
     flexModel.ts           pure logic: flex state, breakpoint cascade, CSS/HTML generation
     shadowModel.ts         pure logic: shadow-layer state, rgba helpers, CSS/HTML generation
+    gradientModel.ts       pure logic: gradient state, stop sorting, rgba helpers, CSS/HTML generation
     highlight.ts           tiny CSS/HTML syntax highlighters
   components/
     Sidebar.tsx            tool navigation rendered from the registry (SOON badge for unbuilt tools)
@@ -60,7 +64,8 @@ src/
     ComingSoon.tsx         placeholder for registered-but-unbuilt tools
     grid/                  GridTool + BreakpointBar + Controls + Preview
     flex/                  FlexTool + BreakpointBar + Controls + Preview
-    shadow/               ShadowTool + Controls + Preview
+    shadow/                ShadowTool + Controls + Preview
+    gradient/              GradientTool + Controls + Preview
 ```
 
 ## Architecture
@@ -74,7 +79,7 @@ Grid and Flexbox use a breakpoint model: `AppState` holds an ordered list of bre
 Base layer carries a full config and each added breakpoint stores only sparse overrides;
 `resolveAt(width)` merges the applicable layers (mobile-first ascending or desktop-first descending)
 to produce the effective config used by both the preview and the generated `@media` blocks. Box
-Shadow keeps a single flat state — box shadows are rarely breakpoint-specific.
+Shadow and Gradient keep a single flat state — those effects are rarely breakpoint-specific.
 
 Genuinely tool-agnostic pieces (`Topbar`, `Toast`, `CodePanel`, `highlight.ts`) are shared; per-tool
 state/config types and models are kept independent even when structurally similar, so each tool's
