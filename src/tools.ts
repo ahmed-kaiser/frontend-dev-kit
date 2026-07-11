@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import GridTool from "./components/grid/GridTool";
 import FlexTool from "./components/flex/FlexTool";
+import ShadowTool from "./components/shadow/ShadowTool";
 
 export interface ToolDef {
   id: string;
@@ -20,7 +21,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
     { id: "flexbox", label: "Flexbox", ico: "▤", component: FlexTool },
   ] },
   { label: "Effects", items: [
-    { id: "box-shadow", label: "Box Shadow", ico: "◨" },
+    { id: "box-shadow", label: "Box Shadow", ico: "◨", component: ShadowTool },
     { id: "glass", label: "Glass Effect", ico: "◍" },
   ] },
   { label: "Utilities", items: [

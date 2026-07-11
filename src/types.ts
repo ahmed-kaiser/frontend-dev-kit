@@ -124,3 +124,33 @@ export interface FlexAppState {
   device: string;
   showLabels: boolean;
 }
+
+/* ---------- Box Shadow tool ---------- */
+
+export interface ShadowLayer {
+  id: number;
+  on: boolean;     // included in output when true; hidden/disabled when false
+  inset: boolean;
+  x: number;       // offset-x (px)
+  y: number;       // offset-y (px)
+  blur: number;    // blur radius (px)
+  spread: number;  // spread radius (px)
+  color: string;   // hex "#rrggbb"
+  alpha: number;   // 0–100
+}
+
+export interface ShadowAppState {
+  layers: ShadowLayer[];
+  selected: number;
+  boxColor: string;   // preview element background (hex)
+  boxAlpha: number;   // preview element background opacity (0–100)
+  border: boolean;    // whether the element has a border
+  borderWidth: number;// border width (px)
+  borderColor: string;// border color (hex)
+  borderAlpha: number;// border opacity (0–100)
+  radius: number;     // preview element border-radius (px)
+  size: number;       // preview element width/height (px)
+  stage: string;      // preview backdrop: "dark" | "light" | "checker" | "custom"
+  stageColor: string; // backdrop color when stage === "custom" (hex)
+  stageAlpha: number; // backdrop opacity when stage === "custom" (0–100)
+}

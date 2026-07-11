@@ -1,6 +1,6 @@
 # DevKit — Project Vision & Progress
 
-_Last updated: July 2026 · Status: v0.4 (Grid + Flexbox Generators shipped)_
+_Last updated: July 2026 · Status: v0.5 (Grid + Flexbox + Box Shadow Generators shipped)_
 
 ## Vision
 
@@ -20,8 +20,8 @@ the way we actually work.
 | --- | --- | --- |
 | **Grid Generator** | Build responsive CSS Grid layouts visually | ✅ Shipped |
 | **Flexbox Generator** | Build responsive flexbox layouts visually | ✅ Shipped |
-| Box Shadow | Compose and stack box shadows | ⏳ Planned (next) |
-| Glass Effect | Frosted-glass / backdrop-blur presets | ⏳ Planned |
+| **Box Shadow** | Compose and stack box shadows | ✅ Shipped |
+| Glass Effect | Frosted-glass / backdrop-blur presets | ⏳ Planned (next) |
 | Color Converter | Convert between HEX / RGB / HSL / OKLCH | ⏳ Planned |
 | Animation | Keyframe & transition generator | ⏳ Planned |
 | _…and more_ | Additional utilities as needs arise | 💡 Ideas |
@@ -52,6 +52,8 @@ react-grid-devkit/
     styles/                  variables.css (theme) + global.css (reset + primitives)
     lib/
       gridModel.ts           pure logic: state, breakpoint cascade, CSS/HTML generation
+      flexModel.ts           pure logic: flex state, breakpoint cascade, CSS/HTML generation
+      shadowModel.ts         pure logic: shadow-layer state, color/rgba helpers, CSS/HTML generation
       highlight.ts           tiny CSS/HTML syntax highlighters
     components/
       Sidebar.tsx            renders tool nav from the registry; disabled state for unbuilt tools
@@ -69,6 +71,10 @@ react-grid-devkit/
         BreakpointBar.tsx    breakpoint layers + min/max-width mode
         Controls.tsx         direction/wrap, gap, alignment, per-item grow/shrink/basis/order
         Preview.tsx          device frame, size readout, live flex layout
+      shadow/
+        ShadowTool.tsx       owns app state + undo/redo history
+        Controls.tsx         layer stack (add/dup/remove/hide), per-layer inset/offset/blur/spread/color+opacity, element bg/border/radius/size, backdrop
+        Preview.tsx          dark/light/checker/custom backdrop, live shadowed element
 ```
 
 The architecture pattern for every future tool: **pure logic in `lib/`, a state-owner
@@ -172,6 +178,48 @@ Second tool, built to the same depth as Grid via the tool-switching shell — re
   basis editing, breakpoint override with correct generated `@media` block, and undo — plus a
   regression check that Grid still works after promoting `CodePanel` to a shared component.
 
+## What's done — Box Shadow Generator
+
+Third tool, registered in `tools.ts` with no shell changes. Deliberately **not** breakpoint-aware
+— box shadows are rarely breakpoint-specific — so it keeps a single flat state instead of the
+breakpoint-layer model, making it the simplest tool to reason about.
+
+**Shadow engine**
+
+- Stack any number of shadow **layers** — add, duplicate, remove, or **hide/show** each layer;
+  actions sit in a two-per-row button grid (Add / Remove, then Duplicate / Hide). Each layer tab
+  shows a colour swatch, and layers paint front-to-back (last layer sits behind the first).
+- **Hidden layers** are kept in state but excluded from both the preview and generated CSS (their
+  tab dims to grayscale), so shadow stacks can be compared without deleting/recreating layers.
+  With every layer hidden the output cleanly becomes `box-shadow: none;`.
+- Per-layer controls: `inset`/`outset` toggle, offset-x, offset-y, blur, and spread sliders,
+  plus a colour picker (native swatch + editable hex) and an opacity slider that emits `rgba()`
+  (falls back to plain hex at full opacity). A live one-line preview of the layer's CSS value
+  sits under the controls.
+- Spread is omitted from the generated value when it's `0`, keeping declarations minimal;
+  multi-layer shadows are emitted one-per-line for readability.
+
+**Element / preview**
+
+- Editable preview element: background **colour + opacity**, an optional **border** (toggle with
+  its own width / colour / opacity), border-radius, and size — all reflected in the generated
+  `.box` rule so the copied CSS reproduces exactly what's shown.
+- Every colour input (shadow, element background, border, custom backdrop) pairs a native swatch
+  with an editable hex field and an opacity slider, all sharing one `rgba()` helper that collapses
+  to plain hex at full opacity.
+- Switchable preview backdrop — **dark / light / checker / custom** (custom exposes its own colour
+  + opacity) — to judge shadows against different surfaces, toggled from the preview bar or cycled
+  by click; live layer-count readout.
+
+**Productivity**
+
+- Live generated **CSS + HTML** and **undo/redo** — reuses the same `CodePanel`, `Topbar`, and
+  history-coalescing pattern as Grid and Flexbox verbatim.
+
+### Quality / verification
+
+- `tsc` strict type-check passes; Vite production build succeeds (68 modules).
+
 ## Deliverables produced so far
 
 - `react-grid-devkit/` — the full Vite + React + TypeScript source project.
@@ -180,7 +228,7 @@ Second tool, built to the same depth as Grid via the tool-switching shell — re
 
 ## Roadmap / next steps
 
-- **Box Shadow** — the next tool, following the same `lib/` + `components/<tool>/` +
+- **Glass Effect** — the next tool, following the same `lib/` + `components/<tool>/` +
   `tools.ts`-registration pattern.
 - **Grid extras** (optional polish): `grid-template-areas` visual editor; hover-to-pick N×M
   size picker.
