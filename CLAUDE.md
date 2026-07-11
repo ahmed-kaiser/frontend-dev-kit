@@ -1,6 +1,6 @@
 # DevKit — Project Vision & Progress
 
-_Last updated: July 2026 · Status: v0.3 (Grid Generator shipped)_
+_Last updated: July 2026 · Status: v0.3 (Grid Generator shipped, tool-switching shell live)_
 
 ## Vision
 
@@ -45,16 +45,19 @@ react-grid-devkit/
   vite.config.ts             build config
   vercel.json                deployment config (framework, build, SPA rewrite)
   src/
-    App.tsx                  shell: sidebar + active tool
+    App.tsx                  shell: hash router, active tool lookup, sidebar mount
+    tools.ts                 tool registry (id, label, icon, component) — single source of truth for nav + routing
     types.ts                 shared type definitions
+    vite-env.d.ts             Vite ambient types (client env, CSS side-effect imports)
     styles/                  variables.css (theme) + global.css (reset + primitives)
     lib/
       gridModel.ts           pure logic: state, breakpoint cascade, CSS/HTML generation
       highlight.ts           tiny CSS/HTML syntax highlighters
     components/
-      Sidebar.tsx            tool navigation
+      Sidebar.tsx            renders tool nav from the registry; disabled state for unbuilt tools
       Topbar.tsx             title + undo/redo/reset/copy
       Toast.tsx              transient notices
+      ComingSoon.tsx          placeholder view for registered-but-unbuilt tools
       grid/
         GridTool.tsx         owns app state + undo/redo history
         BreakpointBar.tsx    breakpoint layers + min/max-width mode
@@ -65,7 +68,8 @@ react-grid-devkit/
 
 The architecture pattern for every future tool: **pure logic in `lib/`, a state-owner
 component, and presentational children.** New tools slot into `components/<tool>/` and register
-in the sidebar.
+as one entry in `tools.ts` — the sidebar and router pick it up automatically, no shell changes
+needed.
 
 ## What's done — Grid Generator
 
@@ -108,8 +112,13 @@ The first tool is complete and covers simple-to-advanced grid authoring.
 
 **App shell**
 
-- Sidebar navigation listing all planned tools (Grid active; the rest queued), topbar actions,
-  and a consistent dark UI theme driven by CSS variables.
+- Tool-switching shell: a small `tools.ts` registry drives both the sidebar and a hash-based
+  router (`#/grid`, `#/box-shadow`, …), so routes are shareable/bookmarkable and survive
+  refresh via the existing SPA rewrite in `vercel.json`.
+- Sidebar navigation renders from the registry — Grid is live and clickable; tools without a
+  registered component show a "SOON" badge and are inert to clicks (but still deep-linkable,
+  rendering a `ComingSoon` placeholder).
+- Topbar actions and a consistent dark UI theme driven by CSS variables.
 
 ### Quality / verification
 
@@ -125,8 +134,8 @@ The first tool is complete and covers simple-to-advanced grid authoring.
 
 ## Roadmap / next steps
 
-- **Tool-switching shell** — lightweight routing so multiple tools can coexist in the app.
-- **Flexbox Generator** — the next tool, following the Grid pattern.
+- **Flexbox Generator** — the next tool, following the Grid pattern (`lib/flexModel.ts` +
+  `components/flex/`, then one entry in `tools.ts`).
 - **Grid extras** (optional polish): `grid-template-areas` visual editor; hover-to-pick N×M
   size picker.
 - **DX**: an `npm run build:standalone` script to regenerate the single-file app on demand.

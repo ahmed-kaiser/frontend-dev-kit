@@ -1,0 +1,7 @@
+.coming-soon {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; color: var(--text-dim); text-align: center; padding: 40px;
+}
+.coming-soon-ico { font-size: 28px; color: var(--text-faint); }
+.coming-soon h2 { font-size: 18px; font-weight: 700; color: var(--text); }
+.coming-soon p { font-size: 13px; color: var(--text-faint); max-width: 320px; }
