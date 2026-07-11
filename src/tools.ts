@@ -4,6 +4,7 @@ import FlexTool from "./components/flex/FlexTool";
 import ShadowTool from "./components/shadow/ShadowTool";
 import GradientTool from "./components/gradient/GradientTool";
 import GlassTool from "./components/glass/GlassTool";
+import ColorTool from "./components/color/ColorTool";
 
 export interface ToolDef {
   id: string;
@@ -28,7 +29,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
     { id: "glass", label: "Glass Effect", ico: "◍", component: GlassTool },
   ] },
   { label: "Utilities", items: [
-    { id: "color", label: "Color Convert", ico: "◑" },
+    { id: "color", label: "Color Convert", ico: "◑", component: ColorTool },
     { id: "animation", label: "Animation", ico: "✦" },
   ] },
 ];

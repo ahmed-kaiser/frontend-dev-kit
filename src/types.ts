@@ -212,3 +212,16 @@ export interface GlassState {
   sceneColor: string;   // backdrop color when scene === "solid" (hex)
   sceneAlpha: number;   // 0–100
 }
+
+/* ---------- Color Converter tool ---------- */
+
+export interface ColorState {
+  /* Canonical color kept as continuous sRGB channels (0–255 floats) plus alpha.
+     Floats — not rounded ints — so HSL/OKLCH slider edits round-trip smoothly
+     instead of snapping to the nearest displayable hex on every drag. */
+  r: number;
+  g: number;
+  b: number;
+  alpha: number;   // 0–100
+  stage: string;   // preview backdrop: "checker" | "dark" | "light"
+}

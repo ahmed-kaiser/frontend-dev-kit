@@ -1,6 +1,6 @@
 # DevKit — Project Vision & Progress
 
-_Last updated: July 2026 · Status: v0.7 (Grid + Flexbox + Box Shadow + Gradient + Glass Generators shipped)_
+_Last updated: July 2026 · Status: v0.8 (Grid + Flexbox + Box Shadow + Gradient + Glass + Color Converter shipped)_
 
 ## Vision
 
@@ -23,8 +23,12 @@ the way we actually work.
 | **Box Shadow** | Compose and stack box shadows | ✅ Shipped |
 | **Gradient** | Linear / radial / conic gradient generator | ✅ Shipped |
 | **Glass Effect** | Frosted-glass / backdrop-blur panels | ✅ Shipped |
-| Color Converter | Convert between HEX / RGB / HSL / OKLCH | ⏳ Planned |
+| **Color Converter** | Convert between HEX / RGB / HSL / OKLCH | ✅ Shipped |
 | Animation | Keyframe & transition generator | ⏳ Planned |
+| Border Radius | Compose per-corner / elliptical radii visually | ⏳ Planned |
+| Color Mixer | Blend two colors across a stepped scale | ⏳ Planned |
+| Shape Generator | Build shapes via `clip-path` / `border-radius` | ⏳ Planned |
+| Text Wrap Visualizer | Preview `text-wrap`, `overflow`, `line-clamp` behavior | ⏳ Planned |
 | _…and more_ | Additional utilities as needs arise | 💡 Ideas |
 
 ## Tech stack
@@ -56,6 +60,7 @@ react-grid-devkit/
       flexModel.ts           pure logic: flex state, breakpoint cascade, CSS/HTML generation
       shadowModel.ts         pure logic: shadow-layer state, color/rgba helpers, CSS/HTML generation
       gradientModel.ts       pure logic: gradient state, stop sorting, color/rgba helpers, CSS/HTML generation
+      colorModel.ts          pure logic: color state (sRGB canonical), HEX/RGB/HSL/OKLCH conversions, format strings, CSS generation
       highlight.ts           tiny CSS/HTML syntax highlighters
     components/
       Sidebar.tsx            renders tool nav from the registry; disabled state for unbuilt tools
@@ -85,6 +90,10 @@ react-grid-devkit/
         GlassTool.tsx        owns app state + undo/redo history
         Controls.tsx         sub-category groups: Frost (blur/saturate/brightness/contrast), Fill (tint+opacity), Border & Highlight, Elevation (drop shadow), Shape, Backdrop (preview scene)
         Preview.tsx          busy scene backdrop (10 scenes incl. a text backdrop + custom solid) with the live frosted panel on top
+      color/
+        ColorTool.tsx        owns app state + undo/redo history
+        Controls.tsx         collapsible format groups (Color+picker+alpha+presets, RGB, HSL, OKLCH) — each editable, converting back to the canonical sRGB
+        Preview.tsx          live swatch over checker/dark/light backdrop with dual contrast samples + copyable HEX/RGB/HSL/OKLCH rows
 ```
 
 The architecture pattern for every future tool: **pure logic in `lib/`, a state-owner
@@ -307,6 +316,50 @@ are organised into **collapsible sub-categories** so the panel scales from basic
 
 - `tsc` strict type-check passes; Vite production build succeeds (82 modules).
 
+## What's done — Color Converter
+
+Sixth tool, registered under **Utilities** in `tools.ts` with no shell changes. It's the first
+tool that's a **converter** rather than a live-CSS generator, so it adapts the shared layout
+language: controls edit a single color on the left; the right shows a live swatch plus each
+format as a copy-ready row (and the shared `CodePanel` emits the color as CSS custom properties).
+
+**Conversion engine**
+
+- Canonical state is the color as **continuous sRGB channels** (`r`/`g`/`b` as 0–255 floats, not
+  rounded ints) plus alpha. Keeping floats — rather than snapping to the nearest displayable hex —
+  lets HSL and OKLCH slider drags round-trip smoothly instead of jittering on every edit; HEX and
+  RGB round only for display.
+- Full bidirectional conversions in `colorModel.ts`: HEX ⇄ sRGB (incl. 3/4/6/8-digit hex with
+  alpha), sRGB ⇄ HSL, and sRGB ⇄ **OKLCH** via linear-light sRGB and OKLab (Ottosson's
+  coefficients). Verified against spec references — pure red resolves to `oklch(62.8% 0.258 29.2)`
+  and the OKLCH→RGB round-trip is exact.
+- Out-of-gamut detection: OKLCH values outside sRGB are flagged in the UI and clamped to the
+  nearest displayable color.
+
+**Controls**
+
+- Collapsible format groups (same `Group` pattern as Gradient/Glass): **Color** (native picker +
+  editable hex + alpha slider + preset swatches), **RGB**, **HSL**, and **OKLCH** — every group is
+  editable and writes back through the canonical sRGB, so all views stay in sync.
+
+**Preview / output**
+
+- Live swatch over a switchable **checker / dark / light** backdrop (checker makes alpha visible),
+  with black-and-white `Aa` samples to judge contrast both ways.
+- Copy-ready **HEX / RGB / HSL / OKLCH** rows — click any row to copy that format; alpha folds into
+  each (`#rrggbbaa`, `rgba()`, `hsla()`, `oklch(… / a)`).
+
+**Productivity**
+
+- Live generated **CSS** (color as `--color` / `--color-rgb` / `--color-hsl` / `--color-oklch`
+  custom properties) + **HTML**, and **undo/redo** — reuses `CodePanel`, `Topbar`, and the same
+  history-coalescing pattern as the other tools.
+
+### Quality / verification
+
+- `tsc` strict type-check passes; Vite production build succeeds (89 modules). OKLCH conversion
+  math validated against spec reference values with an exact round-trip.
+
 ## Deliverables produced so far
 
 - `react-grid-devkit/` — the full Vite + React + TypeScript source project.
@@ -315,8 +368,17 @@ are organised into **collapsible sub-categories** so the panel scales from basic
 
 ## Roadmap / next steps
 
-- **Color Converter** — the next tool (HEX / RGB / HSL / OKLCH), following the same `lib/` +
+- **Animation** — the next tool (keyframe & transition generator), following the same `lib/` +
   `components/<tool>/` + `tools.ts`-registration pattern.
+- **Newly queued tools** (same pattern — pure `lib/` model, state-owner + presentational children,
+  one `tools.ts` entry):
+  - **Border Radius** — per-corner control plus elliptical (`x / y`) radii, with a live shaped box.
+  - **Color Mixer** — blend two colors into a stepped scale; reuses the `colorModel.ts` conversions
+    (mix in a chosen space, e.g. sRGB / OKLCH).
+  - **Shape Generator** — build shapes via `clip-path` (polygon presets + editable points) and/or
+    `border-radius`, with a draggable preview.
+  - **Text Wrap Visualizer** — preview `text-wrap` (`balance` / `pretty`), `overflow`/`text-overflow`,
+    and `-webkit-line-clamp` against editable sample copy at adjustable widths.
 - **Grid extras** (optional polish): `grid-template-areas` visual editor; hover-to-pick N×M
   size picker.
 - **DX**: an `npm run build:standalone` script to regenerate the single-file app on demand.

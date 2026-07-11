@@ -1,0 +1,49 @@
+.preview-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.preview-bar { padding: 9px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.grid-size { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--bg-3); color: var(--text-dim); font-family: var(--mono); white-space: nowrap; text-transform: uppercase; }
+.layer-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); font-family: var(--mono); white-space: nowrap; }
+.stage-btn {
+  font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+  background: var(--bg-2); border: 1px solid var(--border-2); color: var(--text-dim);
+  cursor: pointer; text-transform: capitalize;
+}
+.stage-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+.preview-stage {
+  flex: 1; min-height: 0; overflow: auto; padding: 32px;
+  display: flex; flex-direction: column; align-items: center; gap: 26px;
+}
+/* backdrop variants so alpha + tone are judged against different surfaces */
+.stage-checker {
+  background:
+    conic-gradient(var(--bg-3) 0 25%, transparent 0 50%, var(--bg-3) 0 75%, transparent 0) 0 0 / 24px 24px,
+    var(--bg);
+}
+.stage-dark { background: #0a0c10; }
+.stage-light { background: #f3f4f8; }
+
+.swatch-card {
+  width: 100%; max-width: 560px; border-radius: 16px; overflow: hidden;
+  border: 1px solid var(--border-2); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+}
+.swatch-fill {
+  height: 220px; display: flex; align-items: center; justify-content: center; gap: 28px;
+}
+.sample { font-size: 34px; font-weight: 800; letter-spacing: 0.02em; }
+.sample.dark { color: #000; }
+.sample.light { color: #fff; }
+
+.fmt-list { width: 100%; max-width: 560px; display: flex; flex-direction: column; gap: 8px; }
+.fmt-row {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  padding: 11px 14px; border-radius: var(--radius-sm);
+  background: var(--panel); border: 1px solid var(--border); cursor: pointer;
+}
+.fmt-row:hover { border-color: var(--accent); }
+.fmt-label {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; color: var(--text-faint);
+  width: 52px; flex-shrink: 0;
+}
+.fmt-value { flex: 1; font-family: var(--mono); font-size: 12.5px; color: var(--text); word-break: break-all; }
+.fmt-copy { color: var(--text-faint); flex-shrink: 0; }
+.fmt-row:hover .fmt-copy { color: var(--accent); }
