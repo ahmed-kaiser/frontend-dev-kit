@@ -1,0 +1,23 @@
+.preview-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.preview-bar { padding: 9px 16px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.grid-size { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--bg-3); color: var(--text-dim); font-family: var(--mono); white-space: nowrap; }
+.layer-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); font-family: var(--mono); white-space: nowrap; text-transform: capitalize; }
+
+.preview-stage {
+  position: relative;
+  flex: 1; min-height: 0; overflow: auto; padding: 40px;
+  display: flex; justify-content: center; align-items: center;
+}
+.glass-el { flex-shrink: 0; position: relative; }
+
+/* real type behind the panel (the "text" scene) — painted before .glass-el so
+   backdrop-filter blurs it; clipped to the stage. */
+.scene-text {
+  position: absolute; inset: 0; overflow: hidden;
+  padding: 22px; user-select: none; pointer-events: none;
+  display: flex; align-items: center;
+  color: #fff; font-family: var(--sans);
+  font-size: 34px; font-weight: 800; line-height: 1.12;
+  letter-spacing: -0.02em; text-transform: uppercase; word-break: break-word;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}

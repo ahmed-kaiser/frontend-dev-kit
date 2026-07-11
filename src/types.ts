@@ -173,3 +173,42 @@ export interface GradientState {
   stops: GradientStop[];
   selected: number;
 }
+
+/* ---------- Glass Effect tool ---------- */
+
+export interface GlassState {
+  /* Frost — backdrop-filter (100% = neutral for saturate/brightness/contrast) */
+  blur: number;         // px
+  saturate: number;     // %
+  brightness: number;   // %
+  contrast: number;     // %
+
+  /* Fill — semi-transparent background layer over the blur */
+  tintColor: string;    // hex
+  tintAlpha: number;    // 0–100
+
+  /* Border + top-edge light highlight */
+  border: boolean;
+  borderWidth: number;  // px
+  borderColor: string;  // hex
+  borderAlpha: number;  // 0–100
+  highlight: boolean;   // inset light line along the top edge
+  highlightAlpha: number; // 0–100 (white)
+
+  /* Elevation — drop shadow so the panel floats */
+  shadow: boolean;
+  shadowY: number;      // px
+  shadowBlur: number;   // px
+  shadowColor: string;  // hex
+  shadowAlpha: number;  // 0–100
+
+  /* Shape */
+  radius: number;       // px
+  width: number;        // px
+  height: number;       // px
+
+  /* Preview backdrop scene (so the blur is actually visible) */
+  scene: string;        // "aurora" | "sunset" | "mesh" | "photo" | "solid"
+  sceneColor: string;   // backdrop color when scene === "solid" (hex)
+  sceneAlpha: number;   // 0–100
+}

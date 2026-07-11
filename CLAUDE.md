@@ -1,6 +1,6 @@
 # DevKit — Project Vision & Progress
 
-_Last updated: July 2026 · Status: v0.6 (Grid + Flexbox + Box Shadow + Gradient Generators shipped)_
+_Last updated: July 2026 · Status: v0.7 (Grid + Flexbox + Box Shadow + Gradient + Glass Generators shipped)_
 
 ## Vision
 
@@ -22,7 +22,7 @@ the way we actually work.
 | **Flexbox Generator** | Build responsive flexbox layouts visually | ✅ Shipped |
 | **Box Shadow** | Compose and stack box shadows | ✅ Shipped |
 | **Gradient** | Linear / radial / conic gradient generator | ✅ Shipped |
-| Glass Effect | Frosted-glass / backdrop-blur presets | ⏳ Planned (next) |
+| **Glass Effect** | Frosted-glass / backdrop-blur panels | ✅ Shipped |
 | Color Converter | Convert between HEX / RGB / HSL / OKLCH | ⏳ Planned |
 | Animation | Keyframe & transition generator | ⏳ Planned |
 | _…and more_ | Additional utilities as needs arise | 💡 Ideas |
@@ -81,6 +81,10 @@ react-grid-devkit/
         GradientTool.tsx     owns app state + undo/redo history
         Controls.tsx         type (linear/radial/conic), angle/shape/position, color stops (add/remove) with color+opacity+position, live gradient bar
         Preview.tsx          type/geometry readout, full-bleed live gradient element
+      glass/
+        GlassTool.tsx        owns app state + undo/redo history
+        Controls.tsx         sub-category groups: Frost (blur/saturate/brightness/contrast), Fill (tint+opacity), Border & Highlight, Elevation (drop shadow), Shape, Backdrop (preview scene)
+        Preview.tsx          busy scene backdrop (10 scenes incl. a text backdrop + custom solid) with the live frosted panel on top
 ```
 
 The architecture pattern for every future tool: **pure logic in `lib/`, a state-owner
@@ -256,6 +260,53 @@ keeps a single flat state (gradients are rarely breakpoint-specific).
 - `tsc` strict type-check passes; Vite production build succeeds (75 modules); `#/gradient` route
   serves and the tool mounts.
 
+## What's done — Glass Effect Generator
+
+Fifth tool, registered under **Effects** in `tools.ts` with no shell changes. Like Box Shadow and
+Gradient it keeps a single flat state (glass effects are rarely breakpoint-specific). Its controls
+are organised into **collapsible sub-categories** so the panel scales from basic to advanced use.
+
+**Glass engine**
+
+- **Frost** — `backdrop-filter` with a blur slider (+ quick-blur chips) plus `saturate`,
+  `brightness`, and `contrast`. The three filter functions are only emitted when non-neutral
+  (100%), keeping the value minimal; blur is always present. Output pairs `backdrop-filter` with a
+  `-webkit-backdrop-filter` line for Safari.
+- **Fill** — semi-transparent tint layer (colour + opacity) painted over the blur via the shared
+  `rgba()` helper that collapses to plain hex at full opacity.
+- **Border & Highlight** — optional border (width / colour / opacity) plus an optional inset
+  top-edge light highlight (a white `inset 0 1px 0` line) that simulates light catching the glass
+  edge; both fold into a single combined `box-shadow` with the drop shadow.
+- **Elevation** — optional drop shadow (offset-Y / blur / colour + opacity) so the panel floats.
+- **Shape** — corner radius plus width / height of the panel.
+
+**Preview**
+
+- The frosted panel sits over a **busy scene backdrop** — ten options: `aurora`, `sunset`, `ocean`,
+  `candy`, `lime`, `dusk`, `mesh`, `photo`, a `text` scene, and a custom `solid` colour — chosen so
+  `backdrop-filter` is actually visible (a blur over a flat colour shows nothing). Scenes render from
+  the `SCENES` constant in `glassModel.ts`, so adding one only touches the model. The `text` scene
+  paints real uppercase type behind the panel (painted before the glass element so `backdrop-filter`
+  blurs it) — the real-world test for frosting legible content. All backdrops are preview-only and
+  excluded from the generated `.glass` rule.
+- Blur/size + active-scene readout in the preview bar.
+
+**Productivity**
+
+- Live generated **CSS + HTML** and **undo/redo** — reuses `CodePanel`, `Topbar`, and the same
+  history-coalescing pattern as the other tools.
+
+**Implementation note**
+
+- Colour + opacity controls share a single `ColorField` helper defined at **module scope** (not
+  inside `Controls`). An inner component gets a fresh identity each render, so React remounts it on
+  every edit — which closed the native colour picker and dropped pointer capture mid-drag on the
+  opacity sliders. Module scope keeps its type stable so edits update in place.
+
+### Quality / verification
+
+- `tsc` strict type-check passes; Vite production build succeeds (82 modules).
+
 ## Deliverables produced so far
 
 - `react-grid-devkit/` — the full Vite + React + TypeScript source project.
@@ -264,8 +315,8 @@ keeps a single flat state (gradients are rarely breakpoint-specific).
 
 ## Roadmap / next steps
 
-- **Glass Effect** — the next tool, following the same `lib/` + `components/<tool>/` +
-  `tools.ts`-registration pattern.
+- **Color Converter** — the next tool (HEX / RGB / HSL / OKLCH), following the same `lib/` +
+  `components/<tool>/` + `tools.ts`-registration pattern.
 - **Grid extras** (optional polish): `grid-template-areas` visual editor; hover-to-pick N×M
   size picker.
 - **DX**: an `npm run build:standalone` script to regenerate the single-file app on demand.
