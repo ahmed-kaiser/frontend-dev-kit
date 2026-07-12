@@ -1,8 +1,28 @@
 import type { GlassState } from "../types";
+import bg1 from "../assets/images/bg-1.jpg";
+import bg2 from "../assets/images/bg-2.jpg";
+import bg3 from "../assets/images/bg-3.jpg";
+import bg4 from "../assets/images/bg-4.jpg";
+import bg5 from "../assets/images/bg-5.jpg";
 
 /* ---------- constants ---------- */
-export const SCENES = ["aurora", "sunset", "ocean", "candy", "lime", "dusk", "mesh", "photo", "text", "solid"];
+export const SCENES = ["aurora", "sunset", "ocean", "candy", "lime", "dusk", "mesh", "photo", "text", "image", "solid"];
 export const BLUR_QUICK = [4, 8, 12, 20, 32];
+
+/** Bundled preview photos (real images make the frost read like production glass). */
+export const SCENE_IMAGES: { id: string; url: string }[] = [
+  { id: "bg-1", url: bg1 },
+  { id: "bg-2", url: bg2 },
+  { id: "bg-3", url: bg3 },
+  { id: "bg-4", url: bg4 },
+  { id: "bg-5", url: bg5 },
+];
+
+export const sceneImageUrl = (id: string): string =>
+  (SCENE_IMAGES.find((i) => i.id === id) ?? SCENE_IMAGES[0]).url;
+
+/** Padding baked into `.glass` when it holds text, so the copied rule matches the preview. */
+export const TEXT_PAD = 24;
 
 /** Backdrop for the "text" scene sits behind actual type rendered in the preview. */
 export const TEXT_FILLER =
@@ -71,6 +91,15 @@ export const freshState = (): GlassState => ({
   scene: "aurora",
   sceneColor: "#334155",
   sceneAlpha: 100,
+  sceneImage: "bg-1",
+  text: "",
+  textColor: "#ffffff",
+  textAlpha: 100,
+  textSize: 22,
+  textWeight: 600,
+  textLineHeight: 1.35,
+  textSpacing: 0,
+  textAlign: "center",
 });
 
 /* ---------- color helpers ---------- */
@@ -108,6 +137,8 @@ export function boxShadowValue(S: GlassState): string {
   return parts.join(", ");
 }
 
+export const hasText = (S: GlassState): boolean => S.text.trim().length > 0;
+
 export function buildCSS(S: GlassState): string {
   const filter = filterValue(S);
   const shadow = boxShadowValue(S);
@@ -120,12 +151,31 @@ export function buildCSS(S: GlassState): string {
     `  backdrop-filter: ${filter};`,
     `  -webkit-backdrop-filter: ${filter};`,
   ];
+  if (hasText(S)) {
+    L.push("  display: flex;", "  align-items: center;", `  padding: ${TEXT_PAD}px;`);
+  }
   if (S.border) L.push(`  border: ${S.borderWidth}px solid ${rgba(S.borderColor, S.borderAlpha)};`);
   if (shadow) L.push(`  box-shadow: ${shadow};`);
   L.push("}");
+
+  if (hasText(S)) {
+    L.push(
+      "",
+      ".glass-text {",
+      "  margin: 0;",
+      "  width: 100%;",
+      `  color: ${rgba(S.textColor, S.textAlpha)};`,
+      `  font-size: ${S.textSize}px;`,
+      `  font-weight: ${S.textWeight};`,
+      `  line-height: ${S.textLineHeight};`,
+    );
+    if (S.textSpacing !== 0) L.push(`  letter-spacing: ${S.textSpacing}px;`);
+    L.push(`  text-align: ${S.textAlign};`, "}");
+  }
   return L.join("\n");
 }
 
-export function buildHTML(_S: GlassState): string {
+export function buildHTML(S: GlassState): string {
+  if (hasText(S)) return `<div class="glass">\n  <p class="glass-text">${S.text}</p>\n</div>`;
   return '<div class="glass"></div>';
 }

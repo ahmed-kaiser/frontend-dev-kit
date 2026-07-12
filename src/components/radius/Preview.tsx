@@ -79,7 +79,7 @@ export default function Preview({ S, update }: { S: RadiusState; update: Update 
         <span className="layer-badge">border-radius: {radiusValue(S)}</span>
       </div>
 
-      <div className={"preview-stage stage-" + S.stage} style={isCustom ? { background: customBg } : undefined}>
+      <div className={"rad-stage stage-" + S.stage} style={isCustom ? { background: customBg } : undefined}>
         <div className="rad-box-wrap" style={{ width: S.width, height: S.height }}>
           <div ref={boxRef} className="box-el" style={boxStyle} />
           {S.showHandles && CORNERS.map((k) => (

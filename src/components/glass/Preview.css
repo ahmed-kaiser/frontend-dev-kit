@@ -3,7 +3,7 @@
 .grid-size { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--bg-3); color: var(--text-dim); font-family: var(--mono); white-space: nowrap; }
 .layer-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); font-family: var(--mono); white-space: nowrap; text-transform: capitalize; }
 
-.preview-stage {
+.glass-stage {
   position: relative;
   flex: 1; min-height: 0; overflow: auto; padding: 40px;
   display: flex; justify-content: center; align-items: center;

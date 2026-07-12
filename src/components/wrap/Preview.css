@@ -1,0 +1,57 @@
+.preview-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.preview-bar { padding: 9px 16px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.grid-size { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--bg-3); color: var(--text-dim); font-family: var(--mono); white-space: nowrap; }
+.layer-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); font-family: var(--mono); white-space: nowrap; }
+
+.stage-toggle {
+  font-family: var(--sans); font-size: 11px; font-weight: 600; text-transform: capitalize;
+  padding: 6px 12px; border: 1px solid var(--border-2); background: var(--bg); color: var(--text-dim);
+  border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+}
+.stage-toggle:hover { color: var(--text); border-color: var(--text-faint); }
+.stage-dot { width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--border-2); }
+.stage-dot.dark { background: #0f1115; }
+.stage-dot.light { background: #eef1f6; }
+.stage-dot.checker {
+  background-image:
+    linear-gradient(45deg, #999 25%, transparent 25%), linear-gradient(-45deg, #999 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #999 75%), linear-gradient(-45deg, transparent 75%, #999 75%);
+  background-size: 6px 6px; background-position: 0 0, 0 3px, 3px -3px, -3px 0; background-color: #ddd;
+}
+
+.wrap-stage {
+  flex: 1; min-height: 0; overflow: auto; padding: 44px;
+  display: flex; justify-content: center; align-items: flex-start;
+  transition: background .2s;
+}
+.wrap-stage.stage-dark { background: #0f1115; }
+.wrap-stage.stage-light { background: #eef1f6; }
+.wrap-stage.stage-checker {
+  background-color: #cfd4dc;
+  background-image:
+    linear-gradient(45deg, #aab0bb 25%, transparent 25%), linear-gradient(-45deg, #aab0bb 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #aab0bb 75%), linear-gradient(-45deg, transparent 75%, #aab0bb 75%);
+  background-size: 24px 24px; background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+}
+
+/* the text "card" — a paper surface so wrapping/truncation reads on any backdrop */
+.wrap-card {
+  position: relative; flex-shrink: 0; background: #fbfcfe; border-radius: 10px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.32); overflow: visible;
+}
+.wrap-text {
+  margin: 0; color: #14161c; box-sizing: border-box; width: 100%;
+  border-radius: 10px; overflow-wrap: normal;
+}
+
+/* right-edge resize handle */
+.wrap-resizer {
+  position: absolute; top: 0; right: -7px; bottom: 0; width: 14px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: ew-resize; touch-action: none; z-index: 2;
+}
+.wrap-resizer .grip {
+  width: 6px; height: 46px; border-radius: 4px; background: var(--accent);
+  border: 2px solid #fff; box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+}
+.wrap-resizer:hover .grip { height: 62px; }

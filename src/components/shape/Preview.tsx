@@ -62,7 +62,7 @@ export default function Preview({ S, update }: { S: ShapeState; update: Update }
         <span className="layer-badge">{S.type} · {detail}</span>
       </div>
 
-      <div className={"preview-stage stage-" + S.stage} style={isCustom ? { background: customBg } : undefined}>
+      <div className={"shape-stage stage-" + S.stage} style={isCustom ? { background: customBg } : undefined}>
         <div className="shape-box-wrap" style={{ width: S.width, height: S.height }}>
           <div ref={boxRef} className="shape-el" style={boxStyle} />
 

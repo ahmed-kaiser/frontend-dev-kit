@@ -19,7 +19,7 @@ export default function Preview({ S }: { S: GradientState; update: Update }) {
         <span className="layer-badge">{S.stops.length} stops</span>
       </div>
 
-      <div className="preview-stage">
+      <div className="grad-stage">
         <div className="grad-el" style={{ background: bg }} />
       </div>
     </div>

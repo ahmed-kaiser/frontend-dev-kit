@@ -1,6 +1,6 @@
 # DevKit — Project Vision & Progress
 
-_Last updated: July 2026 · Status: v0.11 (Grid + Flexbox + Box Shadow + Gradient + Glass + Color Converter + Border Radius + Color Mixer + Shape shipped)_
+_Last updated: July 2026 · Status: v0.12 (Grid + Flexbox + Box Shadow + Gradient + Glass + Color Converter + Border Radius + Color Mixer + Shape + Text Wrap shipped — Animation is the only tool left)_
 
 ## Vision
 
@@ -27,8 +27,12 @@ the way we actually work.
 | **Border Radius** | Compose per-corner / elliptical radii visually | ✅ Shipped |
 | **Color Mixer** | Blend two colors across a stepped scale | ✅ Shipped |
 | **Shape Generator** | Build shapes via `clip-path` (presets + draggable points) | ✅ Shipped |
+| **Text Wrap Visualizer** | Preview `text-wrap`, `overflow`, `line-clamp` behavior | ✅ Shipped |
 | Animation | Keyframe & transition generator | ⏳ Planned |
-| Text Wrap Visualizer | Preview `text-wrap`, `overflow`, `line-clamp` behavior | ⏳ Planned |
+| Hover Effects | Compose hover transitions / state changes with a live preview | ⏳ Planned |
+| CSS `clamp()` | Fluid `clamp()` calculator (min / preferred / max ↔ viewport) | ⏳ Planned |
+| Neumorphism | Soft-UI dual-shadow ("neumorphic") generator | ⏳ Planned |
+| PX ↔ REM | Convert px to rem / em against a root font size | ⏳ Planned |
 | _…and more_ | Additional utilities as needs arise | 💡 Ideas |
 
 ## Tech stack
@@ -88,7 +92,7 @@ react-grid-devkit/
         Preview.tsx          type/geometry readout, full-bleed live gradient element
       glass/
         GlassTool.tsx        owns app state + undo/redo history
-        Controls.tsx         sub-category groups: Frost (blur/saturate/brightness/contrast), Fill (tint+opacity), Border & Highlight, Elevation (drop shadow), Shape, Backdrop (preview scene)
+        Controls.tsx         sub-category groups: Frost (blur/saturate/brightness/contrast), Fill (tint+opacity), Text on panel (content + full type controls), Border & Highlight, Elevation (drop shadow), Shape, Backdrop (preview scene incl. image picker)
         Preview.tsx          busy scene backdrop (10 scenes incl. a text backdrop + custom solid) with the live frosted panel on top
       color/
         ColorTool.tsx        owns app state + undo/redo history
@@ -106,6 +110,10 @@ react-grid-devkit/
         ShapeTool.tsx        owns app state + undo/redo history
         Controls.tsx         type seg (polygon/circle/ellipse/inset), polygon presets + vertex tabs + add/remove + X/Y sliders, per-type params, element fill/size/backdrop
         Preview.tsx          clipped element with an SVG outline + draggable vertex handles (polygon) over dark/light/checker/custom backdrop
+      wrap/
+        WrapTool.tsx         owns app state + undo/redo history (undo shortcuts stand down while typing in the sample textarea)
+        Controls.tsx         editable sample + width, property presets, wrap/break segs, truncation (clamp/overflow/text-overflow), typography
+        Preview.tsx          live text card mirroring the generated rule, with a draggable right-edge width resizer, over dark/light/checker backdrop
 ```
 
 Note: `lib/radiusModel.ts` and `lib/mixModel.ts` hold their tools' pure logic. `mixModel.ts`
@@ -119,6 +127,19 @@ needed. Genuinely tool-agnostic pieces (`Topbar`, `Toast`, `CodePanel`, `highlig
 outside any tool folder and are shared; per-tool state/config types and models are not shared
 even when structurally similar (see `GridConfig`/`FlexConfig` in `types.ts`), keeping each tool's
 cascade and codegen logic independent and easy to reason about in isolation.
+
+**CSS-scoping gotcha (important for new tools):** every tool's `Preview.css` is a plain
+(non-module) stylesheet, and all of them are bundled together at app start. Generic class names
+therefore collide **globally** and merge per-property in load order — a bug once left every
+Effects preview left-aligned because `flex-direction: column` / `align-items: flex-start` from
+other tools' `.preview-stage` rules leaked in. The preview **stage** element (the alignment/
+backdrop container) must use a **tool-unique class** — `sh-stage`, `rad-stage`, `shape-stage`,
+`grad-stage`, `glass-stage`, `wrap-stage`, etc. — and its `.stage-<name>` backdrop rules must be
+written **compound** with that unique base (`.sh-stage.stage-dark { … }`). Shared chrome that is
+byte-identical across tools (`.preview-wrap`, `.preview-bar`, `.grid-size`, `.layer-badge`) is
+safe to leave as-is. (Grid/Flex/Color/Mixer still share `.preview-stage`; that's fine only
+because their layouts happen to agree — a future column/top-aligned variant on that shared class
+would re-break them, so give any new tool its own stage class.)
 
 ## What's done — Grid Generator
 
@@ -314,7 +335,21 @@ are organised into **collapsible sub-categories** so the panel scales from basic
   paints real uppercase type behind the panel (painted before the glass element so `backdrop-filter`
   blurs it) — the real-world test for frosting legible content. All backdrops are preview-only and
   excluded from the generated `.glass` rule.
+- **Image scenes** — an `image` scene renders one of five bundled photos (`src/assets/images/
+  bg-1…5.jpg`, imported in `glassModel.ts` so Vite fingerprints them) via `background: url() cover`,
+  chosen from a thumbnail picker; the real-photo backdrop is the truest test of the frost. Still
+  preview-only.
 - Blur/size + active-scene readout in the preview bar.
+
+**Foreground text on the panel**
+
+- A **Text on panel** group lets the user type content that renders **inside** the `.glass` panel
+  (foreground) — the direct legibility check for content over frosted glass. Full type controls:
+  colour + opacity, size, weight (100–900), line-height, letter-spacing, and align.
+- Unlike the backdrop, panel text **is** emitted: when non-empty, `.glass` gains
+  `display:flex; align-items:center; padding` and a sibling `.glass-text` rule is generated, with
+  the HTML nesting `<p class="glass-text">` — so the copied code reproduces the panel exactly.
+  Empty text (the default) keeps the original minimal `.glass`-only output.
 
 **Productivity**
 
@@ -490,6 +525,46 @@ pointer-capture drag pattern first built for Border Radius handles.
 - `tsc` strict type-check passes; Vite production build succeeds (110 modules). All four
   clip-path forms generate valid CSS; vertex dragging uses the proven Border Radius drag pattern.
 
+## What's done — Text Wrap Visualizer
+
+Tenth tool, registered under **Utilities** in `tools.ts` with no shell changes. It's the first
+**type/flow** tool rather than a single styled box, so it adapts the layout language: editable
+copy + width drive the controls; the right shows live text that mirrors the generated rule.
+
+**Wrap engine**
+
+- `text-wrap` (`wrap` / `nowrap` / `balance` / `pretty` / `stable`) — the headline property,
+  always emitted; plus `white-space`, `overflow-wrap`, and `hyphens`.
+- **Truncation** — `-webkit-line-clamp` toggle + line count (emits the required `-webkit-box`
+  display trio, `line-clamp`, and `overflow: hidden`), or plain `overflow`, plus `text-overflow`
+  (`clip` / `ellipsis`). Non-default properties only are emitted, so copied CSS stays lean.
+- **Typography** — font-size, line-height, weight, text-align, for a realistic preview.
+- **Property presets** — Balance, Pretty, 1-line ellipsis, and Clamp 3 lines apply the full
+  multi-property bundle each case needs (the properties interact, so presets prevent dead ends).
+
+**Preview**
+
+- A "paper" text card that renders the sample copy with an inline style **mirroring the generated
+  rule exactly** (layout-affecting props incl. `padding`, so where it wraps matches the CSS).
+- A **draggable right-edge resizer** adjusts the container width live (also a slider in Controls),
+  using the shared pointer-capture pattern; width and current `text-wrap` show in the preview bar.
+
+**Implementation note**
+
+- The tool's Ctrl/Cmd+Z / +Y undo shortcuts **stand down while focus is in the sample textarea**,
+  so editing copy keeps the browser's native text undo instead of stepping the tool history.
+
+**Productivity**
+
+- Live generated **CSS + HTML** and **undo/redo** — reuses `CodePanel`, `Topbar`, and the same
+  history-coalescing pattern as the other tools.
+
+### Quality / verification
+
+- `tsc` strict type-check passes; Vite production build succeeds (117 modules). Generated CSS
+  traced for the truncation presets (single-line ellipsis, multi-line clamp) — valid and the
+  interacting properties resolve correctly.
+
 ## Deliverables produced so far
 
 - `react-grid-devkit/` — the full Vite + React + TypeScript source project.
@@ -498,12 +573,25 @@ pointer-capture drag pattern first built for Border Radius handles.
 
 ## Roadmap / next steps
 
-- **Animation** — the next tool (keyframe & transition generator), following the same `lib/` +
-  `components/<tool>/` + `tools.ts`-registration pattern.
-- **Newly queued tools** (same pattern — pure `lib/` model, state-owner + presentational children,
-  one `tools.ts` entry):
-  - **Text Wrap Visualizer** — preview `text-wrap` (`balance` / `pretty`), `overflow`/`text-overflow`,
-    and `-webkit-line-clamp` against editable sample copy at adjustable widths.
+- **Animation** — the last planned tool and the only one left (keyframe & transition generator),
+  following the same `lib/` + `components/<tool>/` + `tools.ts`-registration pattern. Note it's a
+  different shape from every tool so far — a keyframe timeline with live playback rather than a
+  static styled element — so expect the most involved build (play/pause/scrub state, multiple
+  `@keyframes` rules, easing curves, transition vs. animation modes).
+- **Newly requested tools** (queued — same pattern: pure `lib/` model, state-owner +
+  presentational children, one `tools.ts` entry):
+  1. **Hover Effects** — compose a hover transition (transform / color / shadow / filter changes)
+     with `transition` timing; live preview you can hover to trigger. Likely a two-state model
+     (rest vs. hover) emitting the base rule + `:hover` rule.
+  2. **CSS `clamp()` calculator** — fluid sizing: enter min/max sizes and the viewport range, get
+     the `clamp(min, preferred, max)` with the computed `vw`-based preferred term; live readout of
+     the resolved value across widths. Pairs well with a px↔rem toggle.
+  3. **Neumorphism generator** — soft-UI dual `box-shadow` (a light and a dark offset shadow from
+     one base color), with distance / blur / intensity / radius and a raised vs. inset toggle.
+     Structurally close to **Box Shadow** (`shadowModel.ts`) — reuse its rgba/codegen approach.
+  4. **PX ↔ REM calculator** — convert px to rem/em (and back) against an editable root font size,
+     with a small conversion table; the lightest tool of the set. `colorModel`-style pure math,
+     no live element needed.
 - **Grid extras** (optional polish): `grid-template-areas` visual editor; hover-to-pick N×M
   size picker.
 - **DX**: an `npm run build:standalone` script to regenerate the single-file app on demand.

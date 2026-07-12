@@ -32,7 +32,7 @@ export default function Preview({ S, update }: { S: ShadowAppState; update: Upda
         <span className="layer-badge">{S.layers.length} layer{S.layers.length === 1 ? "" : "s"}</span>
       </div>
 
-      <div className={"preview-stage stage-" + S.stage} style={isCustom ? { background: customBg } : undefined}>
+      <div className={"sh-stage stage-" + S.stage} style={isCustom ? { background: customBg } : undefined}>
         <div className="box-el" style={boxStyle} />
       </div>
     </div>

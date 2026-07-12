@@ -208,9 +208,20 @@ export interface GlassState {
   height: number;       // px
 
   /* Preview backdrop scene (so the blur is actually visible) */
-  scene: string;        // "aurora" | "sunset" | "mesh" | "photo" | "solid"
+  scene: string;        // "aurora" | … | "image" | "solid"
   sceneColor: string;   // backdrop color when scene === "solid" (hex)
   sceneAlpha: number;   // 0–100
+  sceneImage: string;   // selected image id when scene === "image" (e.g. "bg-1")
+
+  /* Foreground text on the panel — a legibility check (preview-only unless non-empty) */
+  text: string;         // panel text; empty = no text
+  textColor: string;    // hex
+  textAlpha: number;    // 0–100
+  textSize: number;     // px
+  textWeight: number;   // 100–900
+  textLineHeight: number; // unitless
+  textSpacing: number;  // letter-spacing (px)
+  textAlign: string;    // "left" | "center" | "right"
 }
 
 /* ---------- Color Converter tool ---------- */
@@ -293,4 +304,31 @@ export interface ShapeState {
   stage: string;        // backdrop: "dark" | "light" | "checker" | "custom"
   stageColor: string;   // backdrop color when stage === "custom" (hex)
   stageAlpha: number;   // 0–100
+}
+
+/* ---------- Text Wrap Visualizer tool ---------- */
+
+export interface WrapState {
+  text: string;         // editable sample copy
+  width: number;        // container max-width (px)
+
+  /* wrapping & breaking */
+  textWrap: string;     // "wrap" | "nowrap" | "balance" | "pretty" | "stable"
+  whiteSpace: string;   // "normal" | "nowrap" | "pre" | "pre-wrap" | "pre-line"
+  overflowWrap: string; // "normal" | "break-word" | "anywhere"
+  hyphens: string;      // "none" | "auto"
+
+  /* truncation */
+  clamp: boolean;       // -webkit-line-clamp
+  lines: number;        // clamp line count
+  overflow: string;     // "visible" | "hidden" | "auto" | "scroll"
+  textOverflow: string; // "clip" | "ellipsis"
+
+  /* typography (for a realistic preview) */
+  fontSize: number;     // px
+  lineHeight: number;   // unitless
+  fontWeight: number;   // 100–900
+  align: string;        // text-align
+
+  stage: string;        // preview backdrop: "dark" | "light" | "checker"
 }

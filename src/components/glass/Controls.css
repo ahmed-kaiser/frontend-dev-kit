@@ -20,3 +20,21 @@
 .color-row input[type="text"] { flex: 1; text-transform: uppercase; }
 
 .hint code { font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
+
+.glass-text-input {
+  width: 100%; resize: vertical; min-height: 52px;
+  background: var(--bg); border: 1px solid var(--border-2); color: var(--text);
+  border-radius: var(--radius-sm); padding: 9px 10px;
+  font-family: var(--sans); font-size: 12.5px; line-height: 1.5; outline: none;
+}
+.glass-text-input:focus { border-color: var(--accent); }
+
+/* image scene thumbnail picker */
+.img-picker { display: flex; flex-wrap: wrap; gap: 8px; }
+.img-thumb {
+  width: 58px; height: 40px; flex-shrink: 0; padding: 0; cursor: pointer;
+  border: 2px solid var(--border-2); border-radius: var(--radius-sm);
+  background-size: cover; background-position: center; background-repeat: no-repeat;
+}
+.img-thumb:hover { border-color: var(--text-faint); }
+.img-thumb.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }

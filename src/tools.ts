@@ -8,6 +8,7 @@ import ColorTool from "./components/color/ColorTool";
 import RadiusTool from "./components/radius/RadiusTool";
 import MixTool from "./components/mixer/MixTool";
 import ShapeTool from "./components/shape/ShapeTool";
+import WrapTool from "./components/wrap/WrapTool";
 
 export interface ToolDef {
   id: string;
@@ -36,6 +37,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
   { label: "Utilities", items: [
     { id: "color", label: "Color Convert", ico: "◑", component: ColorTool },
     { id: "color-mixer", label: "Color Mixer", ico: "◐", component: MixTool },
+    { id: "text-wrap", label: "Text Wrap", ico: "¶", component: WrapTool },
     { id: "animation", label: "Animation", ico: "✦" },
   ] },
 ];
