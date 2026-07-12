@@ -11,6 +11,8 @@ import ShapeTool from "./components/shape/ShapeTool";
 import WrapTool from "./components/wrap/WrapTool";
 import ClampTool from "./components/clamp/ClampTool";
 import PxRemTool from "./components/pxrem/PxRemTool";
+import HoverTool from "./components/hover/HoverTool";
+import NeuTool from "./components/neu/NeuTool";
 
 export interface ToolDef {
   id: string;
@@ -35,6 +37,8 @@ export const TOOL_GROUPS: ToolGroup[] = [
     { id: "shape", label: "Shape", ico: "⬠", component: ShapeTool },
     { id: "gradient", label: "Gradient", ico: "▧", component: GradientTool },
     { id: "glass", label: "Glass Effect", ico: "◍", component: GlassTool },
+    { id: "hover", label: "Hover Effects", ico: "❏", component: HoverTool },
+    { id: "neumorphism", label: "Neumorphism", ico: "◒", component: NeuTool },
   ] },
   { label: "Utilities", items: [
     { id: "color", label: "Color Convert", ico: "◑", component: ColorTool },

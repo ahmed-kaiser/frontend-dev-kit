@@ -1,0 +1,13 @@
+.preview-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.preview-bar { padding: 9px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.grid-size { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--bg-3); color: var(--text-dim); font-family: var(--mono); white-space: nowrap; text-transform: uppercase; }
+.layer-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); font-family: var(--mono); white-space: nowrap; }
+
+/* tool-unique stage class — see CSS-scoping gotcha in CLAUDE.md.
+   Backdrop colour is set inline (it tracks the base surface colour), so no .stage-* variants. */
+.neu-stage {
+  flex: 1; min-height: 0; overflow: auto; padding: 48px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.neu-el { flex-shrink: 0; }

@@ -1,0 +1,34 @@
+.preview-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.preview-bar { padding: 9px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.grid-size { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--bg-3); color: var(--text-dim); font-family: var(--mono); white-space: nowrap; }
+.layer-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); font-family: var(--mono); white-space: nowrap; }
+.stage-btn {
+  font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+  background: var(--bg-2); border: 1px solid var(--border-2); color: var(--text-dim);
+  cursor: pointer; text-transform: capitalize;
+}
+.stage-btn:hover { color: var(--accent); border-color: var(--accent); }
+.stage-btn.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+/* tool-unique stage class — see CSS-scoping gotcha in CLAUDE.md */
+.hover-stage {
+  flex: 1; min-height: 0; overflow: auto; padding: 40px;
+  display: flex; align-items: center; justify-content: center;
+}
+.hover-stage.stage-checker {
+  background:
+    conic-gradient(var(--bg-3) 0 25%, transparent 0 50%, var(--bg-3) 0 75%, transparent 0) 0 0 / 24px 24px,
+    var(--bg);
+}
+.hover-stage.stage-dark { background: #0a0c10; }
+.hover-stage.stage-light { background: #f3f4f8; }
+
+/* the live button gets all of its look from the injected <style> (previewCSS);
+   only the reset for the native <button> lives here. */
+.hvp-btn {
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  appearance: none;
+  outline: none;
+  white-space: nowrap;
+}

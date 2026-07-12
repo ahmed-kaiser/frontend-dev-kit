@@ -1,6 +1,6 @@
 # DevKit — Project Vision & Progress
 
-_Last updated: July 2026 · Status: v0.13 (Grid + Flexbox + Box Shadow + Gradient + Glass + Color Converter + Border Radius + Color Mixer + Shape + Text Wrap + CSS clamp() + PX↔REM shipped — Animation is the only tool left)_
+_Last updated: July 2026 · Status: v0.15 (Grid + Flexbox + Box Shadow + Gradient + Glass + Hover Effects + Neumorphism + Color Converter + Border Radius + Color Mixer + Shape + Text Wrap + CSS clamp() + PX↔REM shipped — Animation is the only tool left)_
 
 ## Vision
 
@@ -30,9 +30,9 @@ the way we actually work.
 | **Text Wrap Visualizer** | Preview `text-wrap`, `overflow`, `line-clamp` behavior | ✅ Shipped |
 | **CSS `clamp()`** | Fluid `clamp()` calculator (min / preferred / max ↔ viewport) | ✅ Shipped |
 | **PX ↔ REM** | Convert px to rem / em against a root font size | ✅ Shipped |
+| **Hover Effects** | Compose hover transitions / state changes with a live preview | ✅ Shipped |
+| **Neumorphism** | Soft-UI dual-shadow ("neumorphic") generator | ✅ Shipped |
 | Animation | Keyframe & transition generator | ⏳ Planned |
-| Hover Effects | Compose hover transitions / state changes with a live preview | ⏳ Planned |
-| Neumorphism | Soft-UI dual-shadow ("neumorphic") generator | ⏳ Planned |
 | _…and more_ | Additional utilities as needs arise | 💡 Ideas |
 
 ## Tech stack
@@ -122,6 +122,14 @@ react-grid-devkit/
         PxRemTool.tsx        owns app state + undo/redo history
         Controls.tsx         linked px⇄rem number fields, px slider + quick chips, editable root font-size, collapsible reference table
         Preview.tsx          big copyable px = rem equation, live text sample, click-to-load conversion table, over dark/light/checker backdrop
+      hover/
+        HoverTool.tsx        owns app state + undo/redo history (undo shortcuts stand down while typing the label input)
+        Controls.tsx         presets, transition (duration/delay/easing), base element (rest look), and one group per hover change (transform/colours/shadow/border/opacity/filter), each with an enable toggle
+        Preview.tsx          injects a scoped <style> (previewCSS) so the real live <button> fires :hover; pin-hover toggle + backdrop cycle
+      neu/
+        NeuTool.tsx          owns app state + undo/redo history
+        Controls.tsx         base surface colour + presets, shape seg (flat/concave/convex/pressed), shadow (distance/blur/intensity) with derived light+dark swatches, element radius/size, preview backdrop tint
+        Preview.tsx          the soft-UI element on a backdrop that tracks the base colour (inline bg — the effect needs matching surfaces)
 ```
 
 Note: `lib/radiusModel.ts` and `lib/mixModel.ts` hold their tools' pure logic. `mixModel.ts`
@@ -641,6 +649,88 @@ as `px / root`).
 - `tsc` strict type-check passes; Vite production build succeeds (136 modules); `#/px-rem` route
   serves and the tool mounts.
 
+## What's done — Hover Effects
+
+Thirteenth tool, registered under **Effects** in `tools.ts` next to Glass with no shell changes.
+Flat state. It's the first tool whose preview is **interactive by nature** — you actually hover
+the generated element to trigger it — so it takes a different rendering approach: the model emits
+a base `.btn` rule plus a `.btn:hover` rule, and the preview injects that same CSS (scoped to a
+private class) into a live `<style>` so the browser's real `:hover` fires.
+
+**Hover engine (`hoverModel.ts`)**
+
+- **Base element (rest state)** — label, width (0 = auto), padding, radius, font size/weight,
+  background + text colour (colour + opacity via a shared `rgba()` helper), optional border, and
+  optional drop shadow. These emit the resting `.btn` rule.
+- **Hover changes** — seven independently-toggleable groups, each emitting one declaration in the
+  `:hover` rule when on: `transform` (scale / rotate / translate X·Y), `background`, `color`,
+  `box-shadow`, `border`, `opacity`, and `filter` (brightness / blur). Only enabled changes are
+  emitted, so the `:hover` rule stays minimal.
+- **Transition** — one shared duration / delay / easing, expanded into a `transition` shorthand
+  that lists **exactly** the properties the enabled hover changes touch (never a blunt `all`).
+  Easing options include the keywords plus a `back` overshoot `cubic-bezier`.
+- **Smooth-start guards** — when a hover change targets `box-shadow` or `transform` but the base
+  doesn't set one, the base rule emits a transparent/`none` placeholder so the property has a value
+  to interpolate from (no snap on first hover).
+- **Presets** — Lift, Grow, Glow, Swap, Sink, Fade — each clears the hover changes to a neutral
+  baseline (`off()`) then sets a coherent bundle, so presets never leave stray state behind.
+
+**Preview**
+
+- The live `<button>` gets its entire look from the injected `previewCSS(S, sel)` stylesheet, so
+  what you hover is byte-for-byte what the copied CSS produces. A **pin-hover** toggle mirrors the
+  `:hover` rule onto a `.force` class to hold the hovered state for inspection; backdrop cycles
+  dark / light / checker. The preview bar shows the active `duration + easing`.
+
+**Productivity**
+
+- Live generated **CSS** (`.btn` + `.btn:hover`) + **HTML**, and **undo/redo** — reuses
+  `CodePanel`, `Topbar`, and the same history-coalescing pattern. Like Text Wrap, the undo
+  shortcuts stand down while typing in the label field so native text undo still works.
+
+### Quality / verification
+
+- `tsc` strict type-check passes; Vite production build succeeds (143 modules); `#/hover` route
+  serves and the tool mounts. Generated `transition` traced to list only the enabled properties.
+
+## What's done — Neumorphism generator
+
+Fourteenth tool, registered under **Effects** in `tools.ts` next to Hover Effects with no shell
+changes. Flat state. As CLAUDE.md anticipated, it's structurally close to **Box Shadow** — it
+reuses `shadowModel.ts`'s `hexToRgb`/shade approach (its own copy, per the per-tool-model
+convention) and is fundamentally a dual `box-shadow`.
+
+**Soft-UI engine (`neuModel.ts`)**
+
+- One **base surface colour** drives everything. The light and dark shadow colours are derived by
+  a channel-proportional `shade(hex, ±intensity)` (the same multiplicative shade neumorphism
+  generators use) — light offsets toward the top-left, dark toward the bottom-right, so the surface
+  reads as extruded.
+- **Shape** — `flat`, `concave`, `convex`, `pressed`. Flat/concave/convex sit **raised** (outset
+  dual shadow); `pressed` emits the **inset** dual shadow. Concave/convex additionally paint a
+  subtle `linear-gradient(145deg, …)` surface (opposite ramps) so the face looks domed in/out.
+- **Distance / blur / intensity** shape the shadow; **radius / size** shape the element. The base
+  colour has a preset row (classic gray, dark slate, warm, lavender, periwinkle, plum).
+
+**Preview**
+
+- The soft element sits on a backdrop whose colour **tracks the base surface** (set inline, so no
+  `.stage-*` variants) — matching surfaces are exactly what the effect requires. A preview-only
+  **backdrop tint** can nudge the backdrop a few percent off the element to reveal the soft edges
+  without breaking the illusion (keep at 0 for the true result). Controls show the live derived
+  light/dark shadow swatches.
+
+**Productivity**
+
+- Live generated **CSS** (`.neu` with the dual `box-shadow` emitted one-per-line) + **HTML**, and
+  **undo/redo** — reuses `CodePanel`, `Topbar`, and the same history-coalescing pattern.
+
+### Quality / verification
+
+- `tsc` strict type-check passes; Vite production build succeeds (150 modules); `#/neumorphism`
+  route serves and the tool mounts. The classic `#e0e5ec` base resolves to `#ffffff` / `~#b7bbc1`
+  shadows as expected.
+
 ## Deliverables produced so far
 
 - `react-grid-devkit/` — the full Vite + React + TypeScript source project.
@@ -649,19 +739,11 @@ as `px / root`).
 
 ## Roadmap / next steps
 
-- **Animation** — the last planned tool and the only one left (keyframe & transition generator),
-  following the same `lib/` + `components/<tool>/` + `tools.ts`-registration pattern. Note it's a
-  different shape from every tool so far — a keyframe timeline with live playback rather than a
-  static styled element — so expect the most involved build (play/pause/scrub state, multiple
-  `@keyframes` rules, easing curves, transition vs. animation modes).
-- **Newly requested tools** (queued — same pattern: pure `lib/` model, state-owner +
-  presentational children, one `tools.ts` entry):
-  1. **Hover Effects** — compose a hover transition (transform / color / shadow / filter changes)
-     with `transition` timing; live preview you can hover to trigger. Likely a two-state model
-     (rest vs. hover) emitting the base rule + `:hover` rule.
-  2. **Neumorphism generator** — soft-UI dual `box-shadow` (a light and a dark offset shadow from
-     one base color), with distance / blur / intensity / radius and a raised vs. inset toggle.
-     Structurally close to **Box Shadow** (`shadowModel.ts`) — reuse its rgba/codegen approach.
+- **Animation** — the last remaining tool (keyframe & transition generator), following the same
+  `lib/` + `components/<tool>/` + `tools.ts`-registration pattern. Note it's a different shape from
+  every tool so far — a keyframe timeline with live playback rather than a static styled element —
+  so expect the most involved build (play/pause/scrub state, multiple `@keyframes` rules, easing
+  curves, transition vs. animation modes). Every other planned and requested tool has now shipped.
 - **Grid extras** (optional polish): `grid-template-areas` visual editor; hover-to-pick N×M
   size picker.
 - **DX**: an `npm run build:standalone` script to regenerate the single-file app on demand.

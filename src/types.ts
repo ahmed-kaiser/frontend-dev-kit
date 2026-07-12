@@ -353,3 +353,52 @@ export interface PxRemState {
   root: number;  // root font-size (px)
   stage: string; // preview backdrop: "dark" | "light" | "checker"
 }
+
+/* ---------- Hover Effects tool ---------- */
+
+export interface HoverState {
+  /* base element — the rest state */
+  label: string;
+  width: number;        // px; 0 = auto width
+  padX: number;         // horizontal padding (px)
+  padY: number;         // vertical padding (px)
+  radius: number;       // px
+  fontSize: number;     // px
+  fontWeight: number;   // 100–900
+  bg: string; bgAlpha: number;
+  color: string; colorAlpha: number;
+  border: boolean; borderWidth: number; borderColor: string; borderAlpha: number;
+  shadow: boolean; shadowY: number; shadowBlur: number; shadowSpread: number; shadowColor: string; shadowAlpha: number;
+
+  /* transition timing (shared by every enabled hover change) */
+  duration: number;     // ms
+  delay: number;        // ms
+  easing: string;       // timing-function (keyword or cubic-bezier())
+
+  /* hover changes — each toggle emits one declaration in the :hover rule */
+  hoverTransform: boolean;
+  hScale: number; hRotate: number; hTx: number; hTy: number;  // scale / deg / translate px
+  hoverBg: boolean; hBg: string; hBgAlpha: number;
+  hoverColor: boolean; hColor: string; hColorAlpha: number;
+  hoverShadow: boolean; hShadowY: number; hShadowBlur: number; hShadowSpread: number; hShadowColor: string; hShadowAlpha: number;
+  hoverBorder: boolean; hBorderWidth: number; hBorderColor: string; hBorderAlpha: number;
+  hoverOpacity: boolean; hOpacity: number;                    // 0–100
+  hoverFilter: boolean; hBrightness: number; hBlur: number;   // % / px
+
+  /* preview */
+  forceHover: boolean;  // pin the hover state without pointing at the element
+  stage: string;        // backdrop: "dark" | "light" | "checker"
+}
+
+/* ---------- Neumorphism generator ---------- */
+
+export interface NeuState {
+  bg: string;        // base surface colour (element AND page share it — that's the effect)
+  distance: number;  // shadow offset (px)
+  blur: number;      // shadow blur (px)
+  intensity: number; // light/dark contrast vs. the base, as a percent shade
+  radius: number;    // border-radius (px)
+  shape: string;     // "flat" | "concave" | "convex" | "pressed"
+  size: number;      // preview element width/height (px)
+  stageTint: number; // preview-only: shade the backdrop vs. the element to reveal edges (percent, 0 = identical)
+}
