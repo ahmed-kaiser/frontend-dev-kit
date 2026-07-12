@@ -225,3 +225,31 @@ export interface ColorState {
   alpha: number;   // 0–100
   stage: string;   // preview backdrop: "checker" | "dark" | "light"
 }
+
+/* ---------- Border Radius tool ---------- */
+
+export interface RadiusCorner {
+  x: number;   // horizontal radius (in the current unit)
+  y: number;   // vertical radius (used only when elliptical)
+}
+
+export interface RadiusState {
+  corners: {
+    tl: RadiusCorner;
+    tr: RadiusCorner;
+    br: RadiusCorner;
+    bl: RadiusCorner;
+  };
+  unit: string;        // "px" | "%" | "rem" | "em"
+  elliptical: boolean; // separate x / y radii per corner when true
+  linked: boolean;     // all four corners share one value when true
+  /* preview element */
+  width: number;       // px
+  height: number;      // px
+  bg: string;          // hex
+  bgAlpha: number;     // 0–100
+  showHandles: boolean;// draggable corner handles on the preview
+  stage: string;       // preview backdrop: "dark" | "light" | "checker" | "custom"
+  stageColor: string;  // backdrop color when stage === "custom" (hex)
+  stageAlpha: number;  // 0–100
+}

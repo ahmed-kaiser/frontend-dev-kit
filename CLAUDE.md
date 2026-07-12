@@ -1,6 +1,6 @@
 # DevKit — Project Vision & Progress
 
-_Last updated: July 2026 · Status: v0.8 (Grid + Flexbox + Box Shadow + Gradient + Glass + Color Converter shipped)_
+_Last updated: July 2026 · Status: v0.9 (Grid + Flexbox + Box Shadow + Gradient + Glass + Color Converter + Border Radius shipped)_
 
 ## Vision
 
@@ -24,8 +24,8 @@ the way we actually work.
 | **Gradient** | Linear / radial / conic gradient generator | ✅ Shipped |
 | **Glass Effect** | Frosted-glass / backdrop-blur panels | ✅ Shipped |
 | **Color Converter** | Convert between HEX / RGB / HSL / OKLCH | ✅ Shipped |
+| **Border Radius** | Compose per-corner / elliptical radii visually | ✅ Shipped |
 | Animation | Keyframe & transition generator | ⏳ Planned |
-| Border Radius | Compose per-corner / elliptical radii visually | ⏳ Planned |
 | Color Mixer | Blend two colors across a stepped scale | ⏳ Planned |
 | Shape Generator | Build shapes via `clip-path` / `border-radius` | ⏳ Planned |
 | Text Wrap Visualizer | Preview `text-wrap`, `overflow`, `line-clamp` behavior | ⏳ Planned |
@@ -94,7 +94,14 @@ react-grid-devkit/
         ColorTool.tsx        owns app state + undo/redo history
         Controls.tsx         collapsible format groups (Color+picker+alpha+presets, RGB, HSL, OKLCH) — each editable, converting back to the canonical sRGB
         Preview.tsx          live swatch over checker/dark/light backdrop with dual contrast samples + copyable HEX/RGB/HSL/OKLCH rows
+      radius/
+        RadiusTool.tsx       owns app state + undo/redo history
+        Controls.tsx         presets, linked/per-corner + uniform/elliptical toggles, unit selector, corner tabs, per-axis sliders, element bg/size/backdrop
+        Preview.tsx          live shaped box with draggable corner handles over dark/light/checker/custom backdrop
 ```
+
+Note: `lib/radiusModel.ts` holds the pure logic (corner state, unit maxes, CSS-shorthand
+collapse + elliptical `/` form, color/rgba helpers, CSS/HTML generation).
 
 The architecture pattern for every future tool: **pure logic in `lib/`, a state-owner
 component, and presentational children.** New tools slot into `components/<tool>/` and register
@@ -360,6 +367,46 @@ format as a copy-ready row (and the shared `CodePanel` emits the color as CSS cu
 - `tsc` strict type-check passes; Vite production build succeeds (89 modules). OKLCH conversion
   math validated against spec reference values with an exact round-trip.
 
+## What's done — Border Radius
+
+Seventh tool, registered under **Effects** in `tools.ts` next to Box Shadow with no shell
+changes. Like the other single-box tools it keeps a flat state (border-radius is rarely
+breakpoint-specific).
+
+**Radius engine**
+
+- Per-corner control for all four corners (TL / TR / BR / BL), each with a horizontal and a
+  vertical radius so **elliptical** corners (`x / y`) are supported. A **uniform** toggle keeps
+  `x === y` (circular) for simpler cases; an **elliptical** toggle exposes both axes.
+- **Linked** mode edits all four corners together; **per-corner** mode adds a 2×2 corner-tab
+  selector (laid out to mirror the physical corners) to edit one corner at a time.
+- **Unit selector** — `px` / `%` / `rem` / `em`; slider range and step adapt per unit
+  (`unitMax` / `unitStep`), and drag/edit values are interpreted in the active unit (no implicit
+  conversion between units).
+- **Presets** — Sharp (0), Soft, Round, Pill (999px), and Circle (50%), each resetting to a
+  linked/uniform value.
+- Generated value uses **CSS shorthand collapse** (1–4 values via margin-like rules) and only
+  emits the `a / b` elliptical form when the horizontal and vertical sets actually differ.
+
+**Preview**
+
+- Live shaped box (editable background colour + opacity, width, height) over the shared
+  dark / light / checker / custom backdrop.
+- **Draggable corner handles** — a handle at each corner adjusts that corner by pointer drag
+  (horizontal → x, vertical → y; the larger axis drives the radius in uniform mode). Handles
+  honour linked vs. per-corner mode and the active unit, and can be toggled off. Uses pointer
+  capture so a drag can't be lost mid-gesture.
+
+**Productivity**
+
+- Live generated **CSS + HTML** and **undo/redo** — reuses `CodePanel`, `Topbar`, and the same
+  history-coalescing pattern as the other tools.
+
+### Quality / verification
+
+- `tsc` strict type-check passes; Vite production build succeeds (96 modules); dev server serves
+  the `#/border-radius` route and the tool mounts.
+
 ## Deliverables produced so far
 
 - `react-grid-devkit/` — the full Vite + React + TypeScript source project.
@@ -372,7 +419,6 @@ format as a copy-ready row (and the shared `CodePanel` emits the color as CSS cu
   `components/<tool>/` + `tools.ts`-registration pattern.
 - **Newly queued tools** (same pattern — pure `lib/` model, state-owner + presentational children,
   one `tools.ts` entry):
-  - **Border Radius** — per-corner control plus elliptical (`x / y`) radii, with a live shaped box.
   - **Color Mixer** — blend two colors into a stepped scale; reuses the `colorModel.ts` conversions
     (mix in a chosen space, e.g. sRGB / OKLCH).
   - **Shape Generator** — build shapes via `clip-path` (polygon presets + editable points) and/or

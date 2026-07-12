@@ -5,6 +5,7 @@ import ShadowTool from "./components/shadow/ShadowTool";
 import GradientTool from "./components/gradient/GradientTool";
 import GlassTool from "./components/glass/GlassTool";
 import ColorTool from "./components/color/ColorTool";
+import RadiusTool from "./components/radius/RadiusTool";
 
 export interface ToolDef {
   id: string;
@@ -25,6 +26,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
   ] },
   { label: "Effects", items: [
     { id: "box-shadow", label: "Box Shadow", ico: "◨", component: ShadowTool },
+    { id: "border-radius", label: "Border Radius", ico: "▢", component: RadiusTool },
     { id: "gradient", label: "Gradient", ico: "▧", component: GradientTool },
     { id: "glass", label: "Glass Effect", ico: "◍", component: GlassTool },
   ] },
