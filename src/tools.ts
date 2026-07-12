@@ -9,6 +9,8 @@ import RadiusTool from "./components/radius/RadiusTool";
 import MixTool from "./components/mixer/MixTool";
 import ShapeTool from "./components/shape/ShapeTool";
 import WrapTool from "./components/wrap/WrapTool";
+import ClampTool from "./components/clamp/ClampTool";
+import PxRemTool from "./components/pxrem/PxRemTool";
 
 export interface ToolDef {
   id: string;
@@ -38,6 +40,8 @@ export const TOOL_GROUPS: ToolGroup[] = [
     { id: "color", label: "Color Convert", ico: "◑", component: ColorTool },
     { id: "color-mixer", label: "Color Mixer", ico: "◐", component: MixTool },
     { id: "text-wrap", label: "Text Wrap", ico: "¶", component: WrapTool },
+    { id: "clamp", label: "CSS clamp()", ico: "⇔", component: ClampTool },
+    { id: "px-rem", label: "PX ↔ REM", ico: "⇆", component: PxRemTool },
     { id: "animation", label: "Animation", ico: "✦" },
   ] },
 ];

@@ -332,3 +332,24 @@ export interface WrapState {
 
   stage: string;        // preview backdrop: "dark" | "light" | "checker"
 }
+
+/* ---------- CSS clamp() calculator ---------- */
+
+export interface ClampState {
+  minSize: number;   // value at (and below) the min viewport (px)
+  maxSize: number;   // value at (and above) the max viewport (px)
+  minVw: number;     // viewport where scaling starts (px)
+  maxVw: number;     // viewport where scaling ends (px)
+  root: number;      // root font-size for rem conversion (px)
+  unit: string;      // output unit: "rem" | "px"
+  previewVw: number; // scrubbed viewport width for the live readout (px)
+  stage: string;     // preview backdrop: "dark" | "light" | "checker"
+}
+
+/* ---------- PX ↔ REM calculator ---------- */
+
+export interface PxRemState {
+  px: number;    // canonical value in px (rem is derived as px / root)
+  root: number;  // root font-size (px)
+  stage: string; // preview backdrop: "dark" | "light" | "checker"
+}

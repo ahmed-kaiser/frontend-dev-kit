@@ -1,0 +1,64 @@
+.preview-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.preview-bar { padding: 9px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.grid-size { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--bg-3); color: var(--text-dim); font-family: var(--mono); white-space: nowrap; text-transform: uppercase; }
+.layer-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); font-family: var(--mono); white-space: nowrap; }
+.stage-btn {
+  font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+  background: var(--bg-2); border: 1px solid var(--border-2); color: var(--text-dim);
+  cursor: pointer; text-transform: capitalize;
+}
+.stage-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+/* tool-unique stage class — see CSS-scoping gotcha in CLAUDE.md */
+.pxr-stage {
+  flex: 1; min-height: 0; overflow: auto; padding: 32px;
+  display: flex; flex-direction: column; align-items: center; gap: 26px;
+}
+.pxr-stage.stage-checker {
+  background:
+    conic-gradient(var(--bg-3) 0 25%, transparent 0 50%, var(--bg-3) 0 75%, transparent 0) 0 0 / 24px 24px,
+    var(--bg);
+}
+.pxr-stage.stage-dark { background: #0a0c10; }
+.pxr-stage.stage-light { background: #f3f4f8; }
+
+.pxr-eq { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; justify-content: center; }
+.eq-part {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 14px 24px; border-radius: 14px;
+  background: var(--panel); border: 1px solid var(--border-2); cursor: pointer;
+}
+.eq-part:hover { border-color: var(--accent); }
+.eq-num { font-family: var(--mono); font-size: 34px; font-weight: 750; color: var(--text); line-height: 1; }
+.eq-unit { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--text-faint); text-transform: uppercase; }
+.eq-part.accent .eq-num { color: var(--accent); }
+.eq-sign { font-size: 30px; color: var(--text-faint); font-weight: 300; }
+
+.pxr-card {
+  width: 100%; max-width: 560px; min-height: 150px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  padding: 24px; border-radius: 16px;
+  background: var(--panel); border: 1px solid var(--border-2);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35); overflow: hidden;
+}
+.pxr-sample { font-weight: 750; line-height: 1; color: var(--text); }
+.pxr-cap { font-size: 11px; color: var(--text-faint); font-family: var(--mono); }
+.pxr-stage.stage-light .pxr-card { background: #fff; }
+.pxr-stage.stage-light .pxr-sample { color: #0a0c10; }
+
+.pxr-table {
+  width: 100%; max-width: 560px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px;
+}
+.pxr-trow {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 12px; border-radius: var(--radius-sm);
+  background: var(--panel); border: 1px solid var(--border); cursor: pointer;
+  font-family: var(--mono); font-size: 12px;
+}
+.pxr-trow:hover { border-color: var(--accent); }
+.pxr-trow.on { background: var(--accent-soft); border-color: var(--accent); }
+.t-px { color: var(--text); font-weight: 600; }
+.t-arrow { color: var(--text-faint); }
+.t-rem { color: var(--text-dim); margin-left: auto; }
+.pxr-trow.on .t-rem, .pxr-trow.on .t-px { color: var(--accent); }

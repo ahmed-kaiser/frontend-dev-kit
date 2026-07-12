@@ -1,6 +1,6 @@
 # DevKit — Project Vision & Progress
 
-_Last updated: July 2026 · Status: v0.12 (Grid + Flexbox + Box Shadow + Gradient + Glass + Color Converter + Border Radius + Color Mixer + Shape + Text Wrap shipped — Animation is the only tool left)_
+_Last updated: July 2026 · Status: v0.13 (Grid + Flexbox + Box Shadow + Gradient + Glass + Color Converter + Border Radius + Color Mixer + Shape + Text Wrap + CSS clamp() + PX↔REM shipped — Animation is the only tool left)_
 
 ## Vision
 
@@ -28,11 +28,11 @@ the way we actually work.
 | **Color Mixer** | Blend two colors across a stepped scale | ✅ Shipped |
 | **Shape Generator** | Build shapes via `clip-path` (presets + draggable points) | ✅ Shipped |
 | **Text Wrap Visualizer** | Preview `text-wrap`, `overflow`, `line-clamp` behavior | ✅ Shipped |
+| **CSS `clamp()`** | Fluid `clamp()` calculator (min / preferred / max ↔ viewport) | ✅ Shipped |
+| **PX ↔ REM** | Convert px to rem / em against a root font size | ✅ Shipped |
 | Animation | Keyframe & transition generator | ⏳ Planned |
 | Hover Effects | Compose hover transitions / state changes with a live preview | ⏳ Planned |
-| CSS `clamp()` | Fluid `clamp()` calculator (min / preferred / max ↔ viewport) | ⏳ Planned |
 | Neumorphism | Soft-UI dual-shadow ("neumorphic") generator | ⏳ Planned |
-| PX ↔ REM | Convert px to rem / em against a root font size | ⏳ Planned |
 | _…and more_ | Additional utilities as needs arise | 💡 Ideas |
 
 ## Tech stack
@@ -114,11 +114,20 @@ react-grid-devkit/
         WrapTool.tsx         owns app state + undo/redo history (undo shortcuts stand down while typing in the sample textarea)
         Controls.tsx         editable sample + width, property presets, wrap/break segs, truncation (clamp/overflow/text-overflow), typography
         Preview.tsx          live text card mirroring the generated rule, with a draggable right-edge width resizer, over dark/light/checker backdrop
+      clamp/
+        ClampTool.tsx        owns app state + undo/redo history
+        Controls.tsx         min/max size, min/max viewport, output-unit seg (rem/px) + root font-size, with descending / zero-range warnings
+        Preview.tsx          live text at the resolved size + an SVG response curve (flat→ramp→flat) with a viewport scrubber, over dark/light/checker backdrop
+      pxrem/
+        PxRemTool.tsx        owns app state + undo/redo history
+        Controls.tsx         linked px⇄rem number fields, px slider + quick chips, editable root font-size, collapsible reference table
+        Preview.tsx          big copyable px = rem equation, live text sample, click-to-load conversion table, over dark/light/checker backdrop
 ```
 
 Note: `lib/radiusModel.ts` and `lib/mixModel.ts` hold their tools' pure logic. `mixModel.ts`
 reuses `colorModel.ts`'s conversions (HSL / OKLCH) rather than duplicating them — it only adds
-the interpolation, hue-direction, and scale-generation logic.
+the interpolation, hue-direction, and scale-generation logic. `lib/clampModel.ts` and
+`lib/pxRemModel.ts` are pure math (no live element needed) — the lightest models in the set.
 
 The architecture pattern for every future tool: **pure logic in `lib/`, a state-owner
 component, and presentational children.** New tools slot into `components/<tool>/` and register
@@ -565,6 +574,73 @@ copy + width drive the controls; the right shows live text that mirrors the gene
   traced for the truncation presets (single-line ellipsis, multi-line clamp) — valid and the
   interacting properties resolve correctly.
 
+## What's done — CSS clamp() calculator
+
+Eleventh tool, registered under **Utilities** in `tools.ts` with no shell changes. It's a
+**calculator** rather than a live-CSS generator (like Color Converter), so the right side shows a
+resolved-value readout and a response chart instead of a styled element. Flat state.
+
+**clamp engine**
+
+- Inputs are a **size range** (min / max, px) and a **viewport range** (min / max, px). `parts()`
+  derives the fluid preferred term as the line through `(minVw, minSize)` and `(maxVw, maxSize)`:
+  `slope = (maxSize − minSize) / (maxVw − minVw)`, a `vw` coefficient of `slope × 100`, and a fixed
+  intercept length. `clamp()` then bounds that line between the two sizes.
+- **Output unit** seg — `rem` (default, with an editable root font-size for the px→rem divide) or
+  `px`. Values trim trailing zeros. The `a + b` / `a − b` preferred term is written sign-aware so a
+  negative `vw` coefficient reads cleanly.
+- Guards: a **zero-width viewport range** degenerates to a flat `clamp()`; a **descending** range
+  (min > max) still generates valid CSS but flags a warning, since it usually signals swapped inputs.
+
+**Preview**
+
+- Live text rendered at the **resolved size** for the scrubbed viewport (`resolvedAt`), plus an
+  **SVG response curve** — flat → linear ramp → flat — with dashed size/viewport bounds, a marker
+  line + dot at the current viewport, and a `grows / shrinks with viewport` note. A viewport
+  **scrubber** (200–2560px) drives the readout; the resolved value is copyable from a chip.
+
+**Productivity**
+
+- Live generated **CSS** (`--fluid` custom property + a `.fluid { font-size }` rule) + **HTML**,
+  and **undo/redo** — reuses `CodePanel`, `Topbar`, and the same history-coalescing pattern.
+
+### Quality / verification
+
+- `tsc` strict type-check passes; Vite production build succeeds (136 modules); `#/clamp` route
+  serves and the tool mounts.
+
+## What's done — PX ↔ REM calculator
+
+Twelfth tool (and the last of the queued utilities before Animation), registered under
+**Utilities** in `tools.ts` with no shell changes. The lightest tool of the set — pure `colorModel`
+-style math, no live styled element beyond a text sample. Flat state (`px` canonical, `rem` derived
+as `px / root`).
+
+**Converter engine**
+
+- Canonical value is **px**; `rem` is derived against an editable **root font-size** (default 16px,
+  guarded against a zero/negative root). Editing the rem field writes back through `remToPx`, so the
+  two stay linked; the root slider rescales every rem without touching the px value.
+- A **reference table** (`tableRows`) lists common sizes (4–64px) converted at the current root,
+  and any cell/chip click loads that px value.
+
+**Preview**
+
+- A big, copyable **`px = rem` equation** (either side copies its own value), a live **text sample**
+  sized at the px value (capped so huge values stay in the card), and a click-to-load **conversion
+  table** — all over the shared dark / light / checker backdrop.
+
+**Productivity**
+
+- Live generated **CSS** (`:root { font-size }` + a `.element { font-size: <rem> /* px */ }` rule)
+  + **HTML**, and **undo/redo** — reuses `CodePanel`, `Topbar`, and the same history-coalescing
+  pattern.
+
+### Quality / verification
+
+- `tsc` strict type-check passes; Vite production build succeeds (136 modules); `#/px-rem` route
+  serves and the tool mounts.
+
 ## Deliverables produced so far
 
 - `react-grid-devkit/` — the full Vite + React + TypeScript source project.
@@ -583,15 +659,9 @@ copy + width drive the controls; the right shows live text that mirrors the gene
   1. **Hover Effects** — compose a hover transition (transform / color / shadow / filter changes)
      with `transition` timing; live preview you can hover to trigger. Likely a two-state model
      (rest vs. hover) emitting the base rule + `:hover` rule.
-  2. **CSS `clamp()` calculator** — fluid sizing: enter min/max sizes and the viewport range, get
-     the `clamp(min, preferred, max)` with the computed `vw`-based preferred term; live readout of
-     the resolved value across widths. Pairs well with a px↔rem toggle.
-  3. **Neumorphism generator** — soft-UI dual `box-shadow` (a light and a dark offset shadow from
+  2. **Neumorphism generator** — soft-UI dual `box-shadow` (a light and a dark offset shadow from
      one base color), with distance / blur / intensity / radius and a raised vs. inset toggle.
      Structurally close to **Box Shadow** (`shadowModel.ts`) — reuse its rgba/codegen approach.
-  4. **PX ↔ REM calculator** — convert px to rem/em (and back) against an editable root font size,
-     with a small conversion table; the lightest tool of the set. `colorModel`-style pure math,
-     no live element needed.
 - **Grid extras** (optional polish): `grid-template-areas` visual editor; hover-to-pick N×M
   size picker.
 - **DX**: an `npm run build:standalone` script to regenerate the single-file app on demand.
