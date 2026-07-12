@@ -266,3 +266,31 @@ export interface MixState {
   hueDir: string;  // hue interpolation direction (hsl/oklch): "short" | "long"
   stage: string;   // preview backdrop: "dark" | "light" | "checker"
 }
+
+/* ---------- Shape Generator tool ---------- */
+
+export interface ShapePoint { x: number; y: number; } // percentages 0–100
+
+export interface ShapeState {
+  type: string;         // "polygon" | "circle" | "ellipse" | "inset"
+  points: ShapePoint[]; // polygon vertices (%)
+  selected: number;     // selected polygon vertex
+
+  /* circle */
+  circleR: number; circleX: number; circleY: number;             // radius / center (%)
+  /* ellipse */
+  ellipseRX: number; ellipseRY: number; ellipseX: number; ellipseY: number; // radii / center (%)
+  /* inset */
+  insetT: number; insetR: number; insetB: number; insetL: number; // edge offsets (%)
+  insetRound: number;                                             // corner rounding (px)
+
+  /* preview element */
+  width: number;        // px
+  height: number;       // px
+  bg: string;           // fill hex
+  bgAlpha: number;      // 0–100
+  showGuides: boolean;  // outline + draggable vertex handles (polygon)
+  stage: string;        // backdrop: "dark" | "light" | "checker" | "custom"
+  stageColor: string;   // backdrop color when stage === "custom" (hex)
+  stageAlpha: number;   // 0–100
+}

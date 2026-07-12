@@ -1,6 +1,6 @@
 # DevKit — Project Vision & Progress
 
-_Last updated: July 2026 · Status: v0.10 (Grid + Flexbox + Box Shadow + Gradient + Glass + Color Converter + Border Radius + Color Mixer shipped)_
+_Last updated: July 2026 · Status: v0.11 (Grid + Flexbox + Box Shadow + Gradient + Glass + Color Converter + Border Radius + Color Mixer + Shape shipped)_
 
 ## Vision
 
@@ -26,8 +26,8 @@ the way we actually work.
 | **Color Converter** | Convert between HEX / RGB / HSL / OKLCH | ✅ Shipped |
 | **Border Radius** | Compose per-corner / elliptical radii visually | ✅ Shipped |
 | **Color Mixer** | Blend two colors across a stepped scale | ✅ Shipped |
+| **Shape Generator** | Build shapes via `clip-path` (presets + draggable points) | ✅ Shipped |
 | Animation | Keyframe & transition generator | ⏳ Planned |
-| Shape Generator | Build shapes via `clip-path` / `border-radius` | ⏳ Planned |
 | Text Wrap Visualizer | Preview `text-wrap`, `overflow`, `line-clamp` behavior | ⏳ Planned |
 | _…and more_ | Additional utilities as needs arise | 💡 Ideas |
 
@@ -102,6 +102,10 @@ react-grid-devkit/
         MixTool.tsx          owns app state + undo/redo history
         Controls.tsx         two endpoint color fields + swap, interpolation-space seg (OKLCH/sRGB/HSL), steps slider, hue-direction seg, backdrop
         Preview.tsx          clickable swatch strip (each cell copies its hex; "Copy scale" copies all) over dark/light/checker backdrop
+      shape/
+        ShapeTool.tsx        owns app state + undo/redo history
+        Controls.tsx         type seg (polygon/circle/ellipse/inset), polygon presets + vertex tabs + add/remove + X/Y sliders, per-type params, element fill/size/backdrop
+        Preview.tsx          clipped element with an SVG outline + draggable vertex handles (polygon) over dark/light/checker/custom backdrop
 ```
 
 Note: `lib/radiusModel.ts` and `lib/mixModel.ts` hold their tools' pure logic. `mixModel.ts`
@@ -449,6 +453,43 @@ changes. It's the first tool that **reuses another tool's `lib/` model** — `mi
 - `tsc` strict type-check passes; Vite production build succeeds (103 modules). OKLCH blend
   spot-checked: exact endpoints and a vivid (non-grey) midpoint.
 
+## What's done — Shape Generator
+
+Ninth tool, registered under **Effects** in `tools.ts` next to Border Radius with no shell
+changes. Flat state (shapes aren't breakpoint-specific). Its signature interaction reuses the
+pointer-capture drag pattern first built for Border Radius handles.
+
+**Shape engine**
+
+- Four `clip-path` **types**: `polygon`, `circle`, `ellipse`, and `inset` — the type seg swaps
+  the relevant controls, and `clipPath(S)` emits the correct function for each (output pairs a
+  `-webkit-clip-path` line with `clip-path` for Safari).
+- **Polygon** — ten presets (triangle, trapezoid, rhombus, parallelogram, pentagon, hexagon,
+  star, arrow, chevron, message). Vertices are editable: a tab per point, add (inserts a midpoint
+  after the selected vertex) / remove (min 3), and X/Y sliders — or **drag the vertices directly
+  on the preview**.
+- **Circle / ellipse** — radius (radii) + center position; **inset** — four edge offsets plus an
+  optional `round` corner radius (only emitted when > 0). All geometry is in `%` except inset
+  rounding (px).
+
+**Preview**
+
+- The clipped element (editable fill colour + opacity, width, height) over the shared
+  dark / light / checker / custom backdrop.
+- For polygons, a **dashed SVG outline** (drawn with `vector-effect: non-scaling-stroke` so the
+  stroke stays crisp under the non-uniform `viewBox`) plus **draggable numbered vertex handles**
+  positioned by percentage; the handles honour selection and can be toggled off.
+
+**Productivity**
+
+- Live generated **CSS + HTML** and **undo/redo** — reuses `CodePanel`, `Topbar`, and the same
+  history-coalescing pattern as the other tools.
+
+### Quality / verification
+
+- `tsc` strict type-check passes; Vite production build succeeds (110 modules). All four
+  clip-path forms generate valid CSS; vertex dragging uses the proven Border Radius drag pattern.
+
 ## Deliverables produced so far
 
 - `react-grid-devkit/` — the full Vite + React + TypeScript source project.
@@ -461,8 +502,6 @@ changes. It's the first tool that **reuses another tool's `lib/` model** — `mi
   `components/<tool>/` + `tools.ts`-registration pattern.
 - **Newly queued tools** (same pattern — pure `lib/` model, state-owner + presentational children,
   one `tools.ts` entry):
-  - **Shape Generator** — build shapes via `clip-path` (polygon presets + editable points) and/or
-    `border-radius`, with a draggable preview.
   - **Text Wrap Visualizer** — preview `text-wrap` (`balance` / `pretty`), `overflow`/`text-overflow`,
     and `-webkit-line-clamp` against editable sample copy at adjustable widths.
 - **Grid extras** (optional polish): `grid-template-areas` visual editor; hover-to-pick N×M
