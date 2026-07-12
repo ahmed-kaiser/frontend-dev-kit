@@ -1,6 +1,6 @@
 # DevKit — Project Vision & Progress
 
-_Last updated: July 2026 · Status: v0.9 (Grid + Flexbox + Box Shadow + Gradient + Glass + Color Converter + Border Radius shipped)_
+_Last updated: July 2026 · Status: v0.10 (Grid + Flexbox + Box Shadow + Gradient + Glass + Color Converter + Border Radius + Color Mixer shipped)_
 
 ## Vision
 
@@ -25,8 +25,8 @@ the way we actually work.
 | **Glass Effect** | Frosted-glass / backdrop-blur panels | ✅ Shipped |
 | **Color Converter** | Convert between HEX / RGB / HSL / OKLCH | ✅ Shipped |
 | **Border Radius** | Compose per-corner / elliptical radii visually | ✅ Shipped |
+| **Color Mixer** | Blend two colors across a stepped scale | ✅ Shipped |
 | Animation | Keyframe & transition generator | ⏳ Planned |
-| Color Mixer | Blend two colors across a stepped scale | ⏳ Planned |
 | Shape Generator | Build shapes via `clip-path` / `border-radius` | ⏳ Planned |
 | Text Wrap Visualizer | Preview `text-wrap`, `overflow`, `line-clamp` behavior | ⏳ Planned |
 | _…and more_ | Additional utilities as needs arise | 💡 Ideas |
@@ -98,10 +98,15 @@ react-grid-devkit/
         RadiusTool.tsx       owns app state + undo/redo history
         Controls.tsx         presets, linked/per-corner + uniform/elliptical toggles, unit selector, corner tabs, per-axis sliders, element bg/size/backdrop
         Preview.tsx          live shaped box with draggable corner handles over dark/light/checker/custom backdrop
+      mixer/
+        MixTool.tsx          owns app state + undo/redo history
+        Controls.tsx         two endpoint color fields + swap, interpolation-space seg (OKLCH/sRGB/HSL), steps slider, hue-direction seg, backdrop
+        Preview.tsx          clickable swatch strip (each cell copies its hex; "Copy scale" copies all) over dark/light/checker backdrop
 ```
 
-Note: `lib/radiusModel.ts` holds the pure logic (corner state, unit maxes, CSS-shorthand
-collapse + elliptical `/` form, color/rgba helpers, CSS/HTML generation).
+Note: `lib/radiusModel.ts` and `lib/mixModel.ts` hold their tools' pure logic. `mixModel.ts`
+reuses `colorModel.ts`'s conversions (HSL / OKLCH) rather than duplicating them — it only adds
+the interpolation, hue-direction, and scale-generation logic.
 
 The architecture pattern for every future tool: **pure logic in `lib/`, a state-owner
 component, and presentational children.** New tools slot into `components/<tool>/` and register
@@ -407,6 +412,43 @@ breakpoint-specific).
 - `tsc` strict type-check passes; Vite production build succeeds (96 modules); dev server serves
   the `#/border-radius` route and the tool mounts.
 
+## What's done — Color Mixer
+
+Eighth tool, registered under **Utilities** in `tools.ts` next to Color Converter with no shell
+changes. It's the first tool that **reuses another tool's `lib/` model** — `mixModel.ts` imports
+`colorModel.ts`'s conversions instead of re-deriving them, keeping the OKLab math in one place.
+
+**Mixing engine**
+
+- Two sRGB **endpoints** (`from` / `to`) blended into a stepped scale, with a **swap** action.
+- Three **interpolation spaces**: `OKLCH` (perceptually uniform — the default), `sRGB` (straight
+  channel lerp), and `HSL`. sRGB blends channels directly; HSL/OKLCH interpolate lightness,
+  chroma/saturation, and hue.
+- **Hue direction** (`shortest` / `longest`) controls which way around the wheel the hue travels
+  for HSL/OKLCH (hidden for sRGB, where it doesn't apply).
+- **Steps** slider (3–16 swatches including both endpoints). Endpoints round-trip exactly
+  (verified: OKLCH `t=0`/`t=1` reproduce the inputs; the midpoint stays vivid, not grey).
+- Scale generation lives in `scale(S)`, shared by the preview and both code generators so the
+  swatch strip, CSS, and HTML never drift.
+
+**Preview / output**
+
+- A full-width **swatch strip** of the scale over a switchable dark / light / checker backdrop;
+  each cell shows its hex (contrast-aware label) and **copies that hex on click**, plus a
+  "Copy scale" action that copies every hex at once.
+- Generated **CSS** emits the scale as `--mix-0…--mix-N` custom properties; **HTML** is a
+  `.scale` row of spans referencing them — copyable together.
+
+**Productivity**
+
+- Live generated **CSS + HTML** and **undo/redo** — reuses `CodePanel`, `Topbar`, and the same
+  history-coalescing pattern as the other tools.
+
+### Quality / verification
+
+- `tsc` strict type-check passes; Vite production build succeeds (103 modules). OKLCH blend
+  spot-checked: exact endpoints and a vivid (non-grey) midpoint.
+
 ## Deliverables produced so far
 
 - `react-grid-devkit/` — the full Vite + React + TypeScript source project.
@@ -419,8 +461,6 @@ breakpoint-specific).
   `components/<tool>/` + `tools.ts`-registration pattern.
 - **Newly queued tools** (same pattern — pure `lib/` model, state-owner + presentational children,
   one `tools.ts` entry):
-  - **Color Mixer** — blend two colors into a stepped scale; reuses the `colorModel.ts` conversions
-    (mix in a chosen space, e.g. sRGB / OKLCH).
   - **Shape Generator** — build shapes via `clip-path` (polygon presets + editable points) and/or
     `border-radius`, with a draggable preview.
   - **Text Wrap Visualizer** — preview `text-wrap` (`balance` / `pretty`), `overflow`/`text-overflow`,

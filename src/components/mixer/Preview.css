@@ -1,0 +1,41 @@
+.preview-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.preview-bar { padding: 9px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.grid-size { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--bg-3); color: var(--text-dim); font-family: var(--mono); white-space: nowrap; text-transform: uppercase; }
+.mix-arrow { color: var(--text-faint); font-weight: 700; }
+.layer-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); font-family: var(--mono); white-space: nowrap; }
+.stage-btn {
+  font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+  background: var(--bg-2); border: 1px solid var(--border-2); color: var(--text-dim);
+  cursor: pointer; text-transform: capitalize;
+}
+.stage-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+.preview-stage {
+  flex: 1; min-height: 0; overflow: auto; padding: 40px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.stage-checker {
+  background:
+    conic-gradient(var(--bg-3) 0 25%, transparent 0 50%, var(--bg-3) 0 75%, transparent 0) 0 0 / 24px 24px,
+    var(--bg);
+}
+.stage-dark { background: #0a0c10; }
+.stage-light { background: #f3f4f8; }
+
+.mix-strip {
+  width: 100%; max-width: 720px; height: 260px; display: flex;
+  border-radius: 16px; overflow: hidden;
+  border: 1px solid var(--border-2); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+}
+.mix-cell {
+  flex: 1; min-width: 0; border: none; padding: 0 0 14px; cursor: pointer;
+  display: flex; align-items: flex-end; justify-content: center;
+  transition: flex-grow .12s;
+}
+.mix-cell:hover { flex-grow: 1.6; }
+.mix-hex {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.02em;
+  padding: 3px 6px; border-radius: 5px; background: rgba(255, 255, 255, 0.14);
+  opacity: 0; transition: opacity .12s; white-space: nowrap;
+}
+.mix-cell:hover .mix-hex { opacity: 1; }

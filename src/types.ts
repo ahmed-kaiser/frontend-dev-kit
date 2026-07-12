@@ -253,3 +253,16 @@ export interface RadiusState {
   stageColor: string;  // backdrop color when stage === "custom" (hex)
   stageAlpha: number;  // 0–100
 }
+
+/* ---------- Color Mixer tool ---------- */
+
+export interface MixEndpoint { r: number; g: number; b: number; } // sRGB 0–255
+
+export interface MixState {
+  from: MixEndpoint;
+  to: MixEndpoint;
+  space: string;   // interpolation space: "oklch" | "srgb" | "hsl"
+  steps: number;   // number of swatches, including both endpoints
+  hueDir: string;  // hue interpolation direction (hsl/oklch): "short" | "long"
+  stage: string;   // preview backdrop: "dark" | "light" | "checker"
+}

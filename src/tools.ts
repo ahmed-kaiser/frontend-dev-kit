@@ -6,6 +6,7 @@ import GradientTool from "./components/gradient/GradientTool";
 import GlassTool from "./components/glass/GlassTool";
 import ColorTool from "./components/color/ColorTool";
 import RadiusTool from "./components/radius/RadiusTool";
+import MixTool from "./components/mixer/MixTool";
 
 export interface ToolDef {
   id: string;
@@ -32,6 +33,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
   ] },
   { label: "Utilities", items: [
     { id: "color", label: "Color Convert", ico: "◑", component: ColorTool },
+    { id: "color-mixer", label: "Color Mixer", ico: "◐", component: MixTool },
     { id: "animation", label: "Animation", ico: "✦" },
   ] },
 ];
